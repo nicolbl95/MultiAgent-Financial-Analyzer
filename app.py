@@ -94,7 +94,7 @@ def apply_premium_layout(fig, title_text):
     )
 
 # Génération dynamique des graphs selon ce que l'IA demande et le rapport actif
-def display_requested_chart(chart_type, report_label):
+def display_requested_chart(chart_type, report_label, key):
     if report_label not in ["BioSensus 2025", "TechNova", "OmniDrive"]:
         report_label = "OmniDrive"
 
@@ -131,7 +131,7 @@ def display_requested_chart(chart_type, report_label):
             title = "📊 Évolution de la Marge Brute Capturée"
         
         apply_premium_layout(fig, title)
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
     elif chart_type == "[GRAPH_REPARTITION]":
         if report_label == "OmniDrive":
@@ -163,7 +163,7 @@ def display_requested_chart(chart_type, report_label):
         )
         apply_premium_layout(fig, title)
         fig.update_layout(showlegend=False) # Masque la légende redondante en bas
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
     elif chart_type == "[GRAPH_PERFORMANCE]":
         fig = go.Figure()
@@ -193,23 +193,26 @@ def display_requested_chart(chart_type, report_label):
             return
         
         apply_premium_layout(fig, title)
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
 # Fonction magique qui découpe le texte pour y insérer les graphs là où l'IA l'a demandé
-def render_dynamic_content(text_block, report_label):
+def render_dynamic_content(text_block, report_label, section_prefix):
     if not text_block:
         return
     
     # On découpe le texte par ligne
     lines = text_block.split("\n")
-    for line in lines:
+    for idx, line in enumerate(lines):
+        # On crée une clé unique basée sur la section et le numéro de ligne
+        chart_key = f"{section_prefix}_chart_{idx}"
+        
         # Si la ligne contient une balise graphique demandée par l'IA
         if "[GRAPH_EVOLUTION]" in line:
-            display_requested_chart("[GRAPH_EVOLUTION]", report_label)
+            display_requested_chart("[GRAPH_EVOLUTION]", report_label, chart_key)
         elif "[GRAPH_REPARTITION]" in line:
-            display_requested_chart("[GRAPH_REPARTITION]", report_label)
+            display_requested_chart("[GRAPH_REPARTITION]", report_label, chart_key)
         elif "[GRAPH_PERFORMANCE]" in line:
-            display_requested_chart("[GRAPH_PERFORMANCE]", report_label)
+            display_requested_chart("[GRAPH_PERFORMANCE]", report_label, chart_key)
         else:
             # Sinon on affiche le texte normal en Markdown
             st.markdown(line)
@@ -273,12 +276,12 @@ if result is not None:
     active_report = st.session_state.get("active_label")
     st.markdown("---")
     
-    # 1. Rendu dynamique de la section Risques
+    # 1. Rendu dynamique de la section Risques (avec préfixe de clé "analysis")
     st.subheader("🕵️‍♂️ Rapport Spécifique d'Analyse des Risques")
-    render_dynamic_content(result.get("analysis"), active_report)
+    render_dynamic_content(result.get("analysis"), active_report, "analysis")
     
     st.markdown("---")
     
-    # 2. Rendu dynamique de la section Synthèse
+    # 2. Rendu dynamique de la section Synthèse (avec préfixe de clé "summary")
     st.subheader("✍️ Synthèse Exécutive pour le Comité de Direction")
-    render_dynamic_content(result.get("summary"), active_report)
+    render_dynamic_content(result.get("summary"), active_report, "summary")
