@@ -2,6 +2,10 @@ import os
 # Cette ligne doit être la toute première du projet pour contourner le bug Python 3.14 / Protobuf
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
+import sys
+# On force Python à inclure le dossier racine du projet pour éviter l'erreur KeyError d'importation
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import tempfile
 from main import build_graph
