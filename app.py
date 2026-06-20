@@ -43,69 +43,49 @@ def run_analysis(pdf_path: str):
 
     return result
 
-# Fonction pour dessiner les graphiques financiers pertinents (Max 3 graphiques)
-def render_financial_charts(report_label):
-    st.markdown("---")
-    st.subheader("📊 Visualisations Graphiques des Données Financières")
-    
+# Fonctions d'affichages isolées des graphiques pour les injecter au bon endroit
+def render_chart_1(report_label):
     if report_label == "OmniDrive":
-        # Graphique 1 : Évolution du Chiffre d'Affaires (Barres)
         fig1 = go.Figure()
         fig1.add_trace(go.Bar(x=['2024', '2025'], y=[48.12, 62.45], text=['48.12M€', '62.45M€'], textposition='auto', marker_color='#1f77b4'))
-        fig1.update_layout(title="Croissance du Chiffre d'Affaires (M€)", template="plotly_dark", height=300)
-
-        # Graphique 2 : Répartition des Revenus 2025 (Camembert)
-        labels = ['OmniCloud Brain AI (SaaS)', 'Intégration Matérielle / Usines']
-        values = [28.90, 33.55]
-        fig2 = px.pie(values=values, names=labels, title="Structure des Revenus 2025", hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
-        fig2.update_layout(template="plotly_dark", height=300)
-
-        # Affichage horizontal
-        c1, c2 = st.columns(2)
-        c1.plotly_chart(fig1, use_container_width=True)
-        c2.plotly_chart(fig2, use_container_width=True)
-
+        fig1.update_layout(title="Focus : Croissance du Chiffre d'Affaires (M€)", template="plotly_dark", height=280)
+        st.plotly_chart(fig1, use_container_width=True)
     elif report_label == "BioSensus 2025":
-        # Graphique 1 : Financement - Capitaux vs Dettes (Barres groupées)
         fig1 = go.Figure(data=[
             go.Bar(name='Capitaux Propres', x=['BioSensus'], y=[31.2], marker_color='#2ca02c'),
             go.Bar(name='Dette Globale', x=['BioSensus'], y=[22.5], marker_color='#d62728')
         ])
-        fig1.update_layout(barmode='group', title="Structure de Financement (M€)", template="plotly_dark", height=300)
+        fig1.update_layout(barmode='group', title="Focus : Structure de Financement & Levée de fonds (M€)", template="plotly_dark", height=280)
+        st.plotly_chart(fig1, use_container_width=True)
+    elif report_label == "TechNova":
+        fig1 = go.Figure()
+        fig1.add_trace(go.Scatter(x=['2024', '2025', 'Prévisions 2026'], y=[59.3, 84.15, 120.0], mode='lines+markers', line=dict(color='#ff7f0e', width=3)))
+        fig1.update_layout(title="Focus : Trajectoire de Croissance Initiale (M€)", template="plotly_dark", height=250)
+        st.plotly_chart(fig1, use_container_width=True)
 
-        # Graphique 2 : Performance & Rentabilité 2025
+def render_chart_2(report_label):
+    if report_label == "OmniDrive":
+        labels = ['OmniCloud Brain AI (SaaS)', 'Intégration Matérielle / Usines']
+        values = [28.90, 33.55]
+        fig2 = px.pie(values=values, names=labels, title="Focus : Répartition des Flux de Revenus", hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
+        fig2.update_layout(template="plotly_dark", height=280)
+        st.plotly_chart(fig2, use_container_width=True)
+    elif report_label == "BioSensus 2025":
         categories = ['Marge Brute', 'EBITDA Ajusté', 'Résultat Opérationnel (EBIT)']
         values = [32.02, 14.15, 8.92]
         fig2 = go.Figure([go.Bar(x=categories, y=values, marker_color=['#1f77b4', '#ff7f0e', '#9467bd'], text=[f"{v}M€" for v in values], textposition='auto')])
-        fig2.update_layout(title="Soldes Intermédiaires de Gestion (M€)", template="plotly_dark", height=300)
-
-        c1, c2 = st.columns(2)
-        c1.plotly_chart(fig1, use_container_width=True)
-        c2.plotly_chart(fig2, use_container_width=True)
-
+        fig2.update_layout(title="Focus : Soldes Intermédiaires de Gestion & Marges (M€)", template="plotly_dark", height=280)
+        st.plotly_chart(fig2, use_container_width=True)
     elif report_label == "TechNova":
-        # Exemple à 3 graphiques (Maximum autorisé)
-        fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=['2024', '2025', 'Prévisions 2026'], y=[59.3, 84.15, 120.0], mode='lines+markers', line=dict(color='#ff7f0e', width=3)))
-        fig1.update_layout(title="Trajectoire du Chiffre d'Affaires (M€)", template="plotly_dark", height=280)
-
         fig2 = go.Figure(data=[go.Pie(labels=['Dette Bancaire LT', 'Avances Étatiques'], values=[22.0, 9.5], hole=0.3)])
-        fig2.update_layout(title="Répartition de la Dette (M€)", template="plotly_dark", height=280)
+        fig2.update_layout(title="Focus : Répartition de la Structure Endettement (M€)", template="plotly_dark", height=250)
+        st.plotly_chart(fig2, use_container_width=True)
 
+def render_chart_3(report_label):
+    if report_label == "TechNova":
         fig3 = go.Figure([go.Bar(x=['Marge Brute', 'R&D', 'EBITDA'], y=[32.14, 18.5, 12.91], marker_color='#17becf')])
-        fig3.update_layout(title="Indicateurs Clés Financiers (M€)", template="plotly_dark", height=280)
-
-        c1, c2, c3 = st.columns(3)
-        c1.plotly_chart(fig1, use_container_width=True)
-        c2.plotly_chart(fig2, use_container_width=True)
-        c3.plotly_chart(fig3, use_container_width=True)
-        
-    else:
-        # Si c'est un PDF externe importé par l'utilisateur (Graphique générique)
-        fig1 = go.Figure()
-        fig1.add_trace(go.Bar(x=['Données Extraites'], y=[100], text=['Fichier traité'], textposition='auto', marker_color='#9467bd'))
-        fig1.update_layout(title="Analyse de Document Externe Terminée", template="plotly_dark", height=300)
-        st.plotly_chart(fig1, use_container_width=False)
+        fig3.update_layout(title="Focus : Performance Opérationnelle (M€)", template="plotly_dark", height=250)
+        st.plotly_chart(fig3, use_container_width=True)
 
 
 uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
@@ -128,11 +108,9 @@ def resolve_sample_path(filename: str) -> str | None:
     for candidate in candidates:
         if os.path.exists(candidate):
             return candidate
-
     for root, _, files in os.walk(project_root):
         if filename in files:
             return os.path.join(root, filename)
-
     return None
 
 example_reports = {
@@ -147,12 +125,11 @@ selected_example_label = st.session_state.get("active_label", None)
 for col, (label, path) in zip(cols, example_reports.items()):
     with col:
         sub_col1, sub_col2 = st.columns([3, 1])
-        
         with sub_col1:
             if st.button(label, use_container_width=True):
                 selected_example = path
                 selected_example_label = label
-                st.session_state["active_label"] = label # Sauvegarde du choix actif
+                st.session_state["active_label"] = label
                 
         with sub_col2:
             if path and os.path.exists(path):
@@ -186,12 +163,30 @@ elif uploaded_file and st.button("Lancer l'analyse IA"):
         os.unlink(tmp_path)
 
 if result is not None:
-    # AFFICHER LES GRAPHIQUES ICI (Entre 2 et 3)
-    render_financial_charts(st.session_state.get("active_label"))
+    active_report = st.session_state.get("active_label")
 
+    # --- STRUCTURE DU RAPPORT FINANCIER IMBRIQUÉ ---
     st.markdown("---")
-    st.subheader("Analyse des risques")
+    
+    # 1. Section Analyse Détaillée des Risques
+    st.subheader("🕵️‍♂️ Rapport Spécifique d'Analyse des Risques")
     st.markdown(result.get("analysis", "Aucune analyse générée."))
-
-    st.subheader("Synthèse pour dirigeants")
+    
+    # Premier point d'insertion graphique juste après l'évaluation brute des risques
+    st.markdown("### 📈 Visualisation Macro-Financière Associée")
+    c1, c2 = st.columns(2)
+    with c1:
+        render_chart_1(active_report)
+    with c2:
+        render_chart_2(active_report)
+        
+    st.markdown("---")
+    
+    # 2. Section Synthèse Décisionnelle pour les Dirigeants
+    st.subheader("✍️ Synthèse Exécutive pour le Comité de Direction")
     st.markdown(result.get("summary", "Aucune synthèse générée."))
+
+    # Deuxième point d'insertion : Si c'est TechNova, on ajoute le 3ème graphique de performance tout à la fin
+    if active_report == "TechNova":
+        st.markdown("### 📊 Éléments Complémentaires de Performance Opérationnelle")
+        render_chart_3(active_report)
