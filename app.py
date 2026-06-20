@@ -24,14 +24,14 @@ graph = build_graph()
 
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊", layout="wide")
 
-# Injection du style CSS pour le déplacement linéaire sur la piste
+# Injection du style CSS pour la piste de course et la cinématique humaine
 st.markdown(
     """
     <style>
     .jogging-track {
         width: 100%;
         position: relative;
-        height: 70px;
+        height: 60px;
         margin-top: 15px;
         overflow: hidden;
         background: transparent;
@@ -41,13 +41,24 @@ st.markdown(
         position: absolute;
         bottom: 5px;
         left: 0;
-        animation: traverse 6s linear infinite;
+        font-size: 38px; /* Taille parfaite pour le coureur */
+        line-height: 1;
+        /* Animation combinée : avance linéaire + dynamique de foulée (bounce/inclinaison) */
+        animation: traverse 5.5s linear infinite, running-stride 0.35s ease-in-out infinite alternate;
     }
+    
+    /* Déplacement de gauche à droite sur l'écran */
     @keyframes traverse {
-        0% { left: 0%; opacity: 0; }
+        0% { left: -5%; opacity: 0; }
         3% { opacity: 1; }
         94% { opacity: 1; }
         100% { left: 100%; opacity: 0; }
+    }
+    
+    /* Vrai dynamisme de course : oscillation verticale + inclinaison naturelle vers l'avant */
+    @keyframes running-stride {
+        0% { transform: translateY(0px) skewX(-10deg); }
+        100% { transform: translateY(-6px) skewX(-12deg); }
     }
     </style>
     """,
@@ -71,73 +82,10 @@ def run_analysis(pdf_path: str):
         
         runner_placeholder = st.empty()
 
-        # Code SVG autonome ultra-optimisé : Vraie cinématique de course humaine intégrée
-        raw_svg = """<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-            <style>
-                /* Animation asynchrone des membres pour une foulée réaliste */
-                .leg-l { animation: run-leg 0.6s infinite ease-in-out; transform-origin: 25px 26px; }
-                .leg-r { animation: run-leg 0.6s infinite ease-in-out; animation-delay: -0.3s; transform-origin: 25px 26px; }
-                
-                .arm-l { animation: run-arm-back 0.6s infinite ease-in-out; transform-origin: 26px 15px; }
-                .arm-r { animation: run-arm-front 0.6s infinite ease-in-out; animation-delay: -0.3s; transform-origin: 26px 15px; }
-                
-                .body-group { animation: run-bounce 0.3s infinite alternate ease-in-out; }
-
-                /* Les jambes se plient au niveau des articulations grâce aux keyframes de rotation */
-                @keyframes run-leg {
-                    0% { transform: rotate(-35deg); }
-                    30% { transform: rotate(15deg); }
-                    60% { transform: rotate(40deg); }
-                    80% { transform: rotate(5deg); }
-                    100% { transform: rotate(-35deg); }
-                }
-                /* Balancement des bras coordonnés en équerre */
-                @keyframes run-arm-front {
-                    0% { transform: rotate(35deg); }
-                    50% { transform: rotate(-30deg); }
-                    100% { transform: rotate(35deg); }
-                }
-                @keyframes run-arm-back {
-                    0% { transform: rotate(-35deg); }
-                    50% { transform: rotate(30deg); }
-                    100% { transform: rotate(-35deg); }
-                }
-                /* Suspension de course (léger rebond vertical) */
-                @keyframes run-bounce {
-                    0% { transform: translateY(0px); }
-                    100% { transform: translateY(-4px); }
-                }
-            </style>
-            
-            <g class="body-group">
-                <g class="arm-l" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="26,15 18,22 13,18" stroke="#E53935" stroke-width="4.5" />
-                    <line x1="13" y1="18" x2="10" y2="15" stroke="#EAA481" stroke-width="4" />
-                </g>
-
-                <polyline class="leg-l" points="25,26 17,37 25,46" fill="none" stroke="#EAA481" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
-
-                <line x1="26" y1="13" x2="25" y2="26" fill="none" stroke="#E53935" stroke-width="6.5" stroke-linecap="round" />
-                <line x1="25" y1="25" x2="25" y2="30" fill="none" stroke="#212121" stroke-width="7" stroke-linecap="round" />
-                
-                <circle cx="30" cy="7.5" r="4.8" fill="#EAA481" stroke="none" />
-
-                <polyline class="leg-r" points="25,26 31,37 23,47" fill="none" stroke="#EAA481" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
-
-                <g class="arm-r" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="26,15 33,21 40,16" stroke="#E53935" stroke-width="4.5" />
-                    <line x1="40" y1="16" x2="43" y2="13" stroke="#EAA481" stroke-width="4" />
-                </g>
-            </g>
-        </svg>"""
-        
-        # Encodage sécurisé local
-        b64_svg = base64.b64encode(raw_svg.encode('utf-8')).decode('utf-8')
-        runner_html = f"""
+        # HTML ultra-léger et robuste utilisant le coureur système natif
+        runner_html = """
         <div class="jogging-track">
-            <div class="runner-container">
-                <img src="data:image/svg+xml;base64,{b64_svg}" width="60" height="60" />
-            </div>
+            <div class="runner-container">🏃</div>
         </div>
         """
         runner_placeholder.markdown(runner_html, unsafe_allow_html=True)
@@ -152,7 +100,7 @@ def run_analysis(pdf_path: str):
         # Traitement
         result = graph.invoke(input_state)
         
-        # Effacement propre du joggeur à la fin de la compilation
+        # Suppression propre du coureur à la fin
         runner_placeholder.empty()
         
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
