@@ -29,7 +29,7 @@ def get_writer_llm():
 
     if ChatGroq is not None and groq_api_key:
         return ChatGroq(
-            temperature=0.8,
+            temperature=0.95,
             model_name="llama-3.1-8b-instant",
             groq_api_key=groq_api_key,
         )
@@ -49,6 +49,11 @@ def write_summary(state):
     prompt = f"""Tu es un expert en communication financière auprès de comités de direction.
 À partir de l'analyse détaillée des risques ci-dessous, rédige une synthèse exécutive (Summary) claire, concise et percutante.
 Structure ta réponse sous forme de paragraphes fluides (pas de style haché ligne par ligne).
+
+CRITIQUE : Tu DOIS enrichir visuellement cette synthèse pour le comité en y insérant de manière pertinente 1 balise graphique (qui n'a pas encore été exploitée dans l'analyse brute ou qui vient appuyer ta conclusion majeure) sur sa propre ligne :
+- [GRAPH_EVOLUTION] (Trajectoire et croissance)
+- [GRAPH_REPARTITION] (Structure financière et répartition)
+- [GRAPH_PERFORMANCE] (Indicateurs clés et rentabilité)
 
 Analyse détaillée :
 {analysis}"""

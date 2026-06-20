@@ -2,6 +2,7 @@ import os
 import shutil
 import chromadb
 from dotenv import load_dotenv
+from pydantic import SecretStr
 
 load_dotenv()
 
@@ -21,9 +22,9 @@ def get_analyzer_llm():
 
     if ChatGroq is not None and groq_api_key:
         return ChatGroq(
-            temperature=0.8,
-            model_name="llama-3.1-8b-instant",
-            groq_api_key=groq_api_key,
+            temperature=0.95,
+            model="llama-3.1-8b-instant",
+            api_key=SecretStr(groq_api_key),
         )
 
     if OllamaLLM is not None and shutil.which("ollama"):
@@ -54,12 +55,19 @@ def analyze_risks(state):
     analyse_generee = None
 
     if llm is not None:
-        prompt = f"""Tu es un analyste financier senior. Sur la base uniquement du contexte extrait ci-dessous,
-rédige un rapport d'analyse structuré listant précisément les risques identifiés.
-Fais des phrases complètes, fluides et horizontales.
+        prompt = f"""Tu es un analyste financier senior expert en gestion des risques.
+À partir des données extraites du document, rédige une analyse détaillée des risques financiers de l'entreprise.
+Structure ta réponse avec des paragraphes fluides, rédigés et professionnels.
 
-Contexte extrait :
-{contexte_propre}"""
+CRITIQUE : Pour illustrer ton analyse, tu DOIS insérer de manière fluide exactement 1 ou 2 balises graphiques parmi les suivantes, au moment le plus opportun dans ton texte (juste après ou pendant que tu évoques des chiffres clés) :
+- Insère la balise [GRAPH_EVOLUTION] si tu parles de la trajectoire globale, de la croissance ou de l'historique de l'entreprise.
+- Insère la balise [GRAPH_REPARTITION] si tu parles de la structure du capital, de la répartition de la dette ou de la provenance des revenus.
+- Insère la balise [GRAPH_PERFORMANCE] si tu analyses la rentabilité, les marges, l'EBITDA ou les coûts opérationnels/R&D.
+
+Fais en sorte que ces balises soient écrites sur leur propre ligne entre deux paragraphes.
+
+Données du document :
+{raw_text}"""
         try:
             response = llm.invoke(prompt)
             analyse_generee = response if isinstance(response, str) else getattr(response, "content", str(response))
