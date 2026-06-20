@@ -24,14 +24,14 @@ graph = build_graph()
 
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊", layout="wide")
 
-# Injection du style CSS pour le déplacement global sur la piste
+# Injection du CSS gérant la translation fluide de gauche à droite sur la piste
 st.markdown(
     """
     <style>
     .jogging-track {
         width: 100%;
         position: relative;
-        height: 70px;
+        height: 75px;
         margin-top: 15px;
         overflow: hidden;
         background: transparent;
@@ -40,7 +40,7 @@ st.markdown(
         position: absolute;
         bottom: 5px;
         left: 0;
-        animation: traverse 6s linear infinite;
+        animation: traverse 5.5s linear infinite;
     }
     @keyframes traverse {
         0% { left: 0%; opacity: 0; }
@@ -70,89 +70,85 @@ def run_analysis(pdf_path: str):
         
         runner_placeholder = st.empty()
 
-        # Nouveau code SVG d'un vrai joggeur articulé (buste projeté en avant, bras pliés à 90°, jambes flexibles)
-        raw_svg = """<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        # Nouveau SVG cinématique : Les genoux et les coudes ont des animations de pliage cycliques indépendantes des hanches
+        raw_svg = """<svg width="65" height="65" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
             <style>
-                /* Animation de la jambe avant : extension et propulsion */
-                .leg-front {
-                    animation: run-leg-front 0.6s infinite linear;
-                    transform-origin: 25px 27px;
-                }
-                /* Animation de la jambe arrière : déphasée pour alterner */
-                .leg-back {
-                    animation: run-leg-back 0.6s infinite linear;
-                    transform-origin: 25px 27px;
-                }
-                /* Balancement des bras en équerre (90°) */
-                .arm-front {
-                    animation: run-arm-front 0.6s infinite linear;
-                    transform-origin: 28px 16px;
-                }
-                .arm-back {
-                    animation: run-arm-back 0.6s infinite linear;
-                    transform-origin: 28px 16px;
-                }
-                /* Oscillation de course du haut du corps (effet de foulée/suspension) */
-                .torso-group {
-                    animation: run-bounce 0.3s infinite alternate ease-in-out;
-                }
+                /* Cycle complet de course humaine - Synchronisation des articulations */
+                .arm-back-group { animation: cycle-arm-back 0.6s infinite linear; transform-origin: 25px 16px; }
+                .arm-front-group { animation: cycle-arm-front 0.6s infinite linear; transform-origin: 25px 16px; }
+                
+                .leg-back-thigh { animation: cycle-thigh-back 0.6s infinite linear; transform-origin: 23px 28px; }
+                .leg-front-thigh { animation: cycle-thigh-front 0.6s infinite linear; transform-origin: 23px 28px; }
+                
+                .body-core { animation: cycle-bounce 0.3s infinite alternate ease-in-out; transform-origin: center; }
 
-                @keyframes run-leg-front {
+                /* Animations des cuisses (Hanches) */
+                @keyframes cycle-thigh-front {
                     0% { transform: rotate(-35deg); }
-                    50% { transform: rotate(25deg); }
+                    25% { transform: rotate(10deg); }
+                    50% { transform: rotate(35deg); }
+                    75% { transform: rotate(0deg); }
                     100% { transform: rotate(-35deg); }
                 }
-                @keyframes run-leg-back {
+                @keyframes cycle-thigh-back {
+                    0% { transform: rotate(35deg); }
+                    25% { transform: rotate(0deg); }
+                    50% { transform: rotate(-35deg); }
+                    75% { transform: rotate(10deg); }
+                    100% { transform: rotate(35deg); }
+                }
+
+                /* Animations des bras pliés à 90° (Coudes/Épaules) */
+                @keyframes cycle-arm-front {
                     0% { transform: rotate(25deg); }
                     50% { transform: rotate(-35deg); }
                     100% { transform: rotate(25deg); }
                 }
-                @keyframes run-arm-front {
-                    0% { transform: rotate(30deg); }
-                    50% { transform: rotate(-40deg); }
-                    100% { transform: rotate(30deg); }
+                @keyframes cycle-arm-back {
+                    0% { transform: rotate(-35deg); }
+                    50% { transform: rotate(25deg); }
+                    100% { transform: rotate(-35deg); }
                 }
-                @keyframes run-arm-back {
-                    0% { transform: rotate(-40deg); }
-                    50% { transform: rotate(30deg); }
-                    100% { transform: rotate(-40deg); }
-                }
-                @keyframes run-bounce {
-                    0% { transform: translateY(0px); }
-                    100% { transform: translateY(-3px); }
+
+                /* Dynamique d'impact au sol (Le corps s'élève à l'impulsion) */
+                @keyframes cycle-bounce {
+                    0% { transform: translateY(0px) rotate(0deg); }
+                    100% { transform: translateY(-4px) rotate(1deg); }
                 }
             </style>
             
-            <g class="torso-group">
-                <g class="arm-back" fill="none" stroke-linejoin="round" stroke-linecap="round">
-                    <polyline points="28,16 20,22 14,17" stroke="#E53935" stroke-width="4.5" />
-                    <line x1="14" y1="17" x2="11" y2="15" stroke="#EAA481" stroke-width="4" />
+            <g class="body-core">
+                <g class="leg-back-thigh" fill="none" stroke="#EAA481" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23,28 17,39 26,45" />
                 </g>
 
-                # 2. Jambe Arrière (Articulée : hanche, genou fléchi, pied)
-                <polyline class="leg-back" points="25,27 16,38 24,47" fill="none" stroke="#EAA481" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+                <g class="arm-back-group" fill="none" stroke-linejoin="round" stroke-linecap="round">
+                    <polyline points="25,16 18,23 13,18" stroke="#E53935" stroke-width="4.5" />
+                    <line x1="13" y1="18" x2="10" y2="15" stroke="#EAA481" stroke-width="4" />
+                </g>
 
-                <line x1="25" y1="14" x2="25" y2="27" fill="none" stroke="#E53935" stroke-width="6.5" stroke-linecap="round" />
-                <line x1="24" y1="26" x2="25" y2="30" fill="none" stroke="#212121" stroke-width="7" stroke-linecap="round" />
+                <line x1="25" y1="14" x2="23" y2="28" fill="none" stroke="#E53935" stroke-width="7" stroke-linecap="round" />
+                <line x1="23" y1="26" x2="23" y2="31" fill="none" stroke="#212121" stroke-width="7.5" stroke-linecap="round" />
                 
-                <circle cx="30" cy="8" r="5" fill="#EAA481" stroke="none" />
+                <circle cx="29" cy="8" r="5" fill="#EAA481" stroke="none" />
 
-                # 5. Jambe Avant (Articulée : hanche, genou fléchi, pied)
-                <polyline class="leg-front" points="25,27 31,39 25,48" fill="none" stroke="#EAA481" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+                <g class="leg-front-thigh" fill="none" stroke="#EAA481" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23,28 31,38 24,46" />
+                </g>
 
-                <g class="arm-front" fill="none" stroke-linejoin="round" stroke-linecap="round">
-                    <polyline points="28,16 34,23 41,19" stroke="#E53935" stroke-width="4.5" />
-                    <line x1="41" y1="19" x2="44" y2="17" stroke="#EAA481" stroke-width="4" />
+                <g class="arm-front-group" fill="none" stroke-linejoin="round" stroke-linecap="round">
+                    <polyline points="25,16 33,22 40,17" stroke="#E53935" stroke-width="4.5" />
+                    <line x1="40" y1="17" x2="43" y2="14" stroke="#EAA481" stroke-width="4" />
                 </g>
             </g>
         </svg>"""
         
-        # Encodage Base64
+        # Isolation complète de la structure SVG en Base64
         b64_svg = base64.b64encode(raw_svg.encode('utf-8')).decode('utf-8')
         runner_html = f"""
         <div class="jogging-track">
             <div class="runner-container">
-                <img src="data:image/svg+xml;base64,{b64_svg}" width="60" height="60" />
+                <img src="data:image/svg+xml;base64,{b64_svg}" width="65" height="65" />
             </div>
         </div>
         """
@@ -165,10 +161,10 @@ def run_analysis(pdf_path: str):
         
         input_state: AgentState = {"pdf_path": pdf_path}
         
-        # Traitement
+        # Traitement du graphe multi-agents
         result = graph.invoke(input_state)
         
-        # Nettoyage
+        # Suppression de la piste à la fin du chargement
         runner_placeholder.empty()
         
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
