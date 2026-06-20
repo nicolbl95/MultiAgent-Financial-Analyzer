@@ -14,7 +14,7 @@ sys.modules['agents'] = __import__('agents')
 
 import streamlit as st
 import tempfile
-from main import build_graph
+from main import AgentState, build_graph
 
 # On initialise le graphe une seule fois au chargement global
 graph = build_graph()
@@ -26,8 +26,8 @@ st.write("Déposez un rapport financier PDF. 3 agents IA l'analysent en séquenc
 with st.sidebar:
     st.header("Architecture du système")
     st.write("1. Agent Extracteur (ChromaDB + RAG)")
-    st.write("2. Agent Analyste (Ollama / Llama 3)")
-    st.write("3. Agent Rédacteur (LangGraph)")
+    st.write("2. Agent Analyste (ChromaDB + Query)")
+    st.write("3. Agent Rédacteur (LangGraph + Groq)")
 
 uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
 
@@ -44,7 +44,8 @@ if uploaded_file and st.button("Lancer l'analyse IA"):
         st.write("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
         
         st.write("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
-        result = graph.invoke({"pdf_path": tmp_path})
+        input_state: AgentState = {"pdf_path": tmp_path}
+        result = graph.invoke(input_state)
         
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
 
@@ -52,9 +53,9 @@ if uploaded_file and st.button("Lancer l'analyse IA"):
     if os.path.exists(tmp_path):
         os.unlink(tmp_path)
 
-    # Affichage des résultats générés par les agents
+    # Correction de l'affichage : Utilisation de st.markdown à la place de st.write pour éviter l'effet vertical
     st.subheader("Analyse des risques")
-    st.write(result.get("analysis", "Aucune analyse générée."))
+    st.markdown(result.get("analysis", "Aucune analyse générée."))
     
     st.subheader("Synthèse pour dirigeants")
-    st.write(result.get("summary", "Aucune synthèse générée."))
+    st.markdown(result.get("summary", "Aucune synthèse générée."))
