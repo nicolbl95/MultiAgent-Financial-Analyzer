@@ -7,4 +7,4 @@ chromadb
 pypdf
 langchain-groq
 python-dotenv
-protobuf
+protobuf==3.20.3
