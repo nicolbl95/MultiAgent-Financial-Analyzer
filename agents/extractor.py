@@ -19,9 +19,18 @@ def extract_and_store(state):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_documents(pages)
     
-    # 3. Initialisation de ChromaDB et stockage des fragments
+    # 3. Initialisation de ChromaDB et NETTOYAGE de la mémoire
     client = chromadb.Client()
-    collection = client.get_or_create_collection("financial_doc")
+    
+    # SÉCURITÉ ANTI-CHEVAUCHEMENT : Supprime l'ancienne collection si elle existe déjà
+    try:
+        client.delete_collection("financial_doc")
+    except Exception:
+        # Si la collection n'existait pas encore (premier lancement), on ignore poliment l'erreur
+        pass
+    
+    # Création d'une collection vierge et propre
+    collection = client.create_collection("financial_doc")
     
     # Extraction de l'intégralité du texte pour le transmettre à l'état
     full_text = ""

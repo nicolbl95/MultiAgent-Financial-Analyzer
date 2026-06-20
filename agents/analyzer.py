@@ -1,46 +1,76 @@
 import os
+import shutil
 import chromadb
-from langchain_ollama import OllamaLLM
+from dotenv import load_dotenv
+
+load_dotenv()
+
+try:
+    from langchain_groq import ChatGroq
+except ImportError:
+    ChatGroq = None
+
+try:
+    from langchain_ollama import OllamaLLM
+except ImportError:
+    OllamaLLM = None
+
+
+def get_analyzer_llm():
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+
+    if ChatGroq is not None and groq_api_key:
+        return ChatGroq(
+            temperature=0.3,
+            model_name="llama-3.1-8b-instant",
+            groq_api_key=groq_api_key,
+        )
+
+    if OllamaLLM is not None and shutil.which("ollama"):
+        return OllamaLLM(model="llama3")
+
+    return None
+
 
 def analyze_risks(state):
-    # 1. Récupérer l'état
     if isinstance(state, dict):
         raw_text = state.get("raw_text", "")
     else:
         raw_text = state.raw_text
 
-    # 2. Connexion à ChromaDB
     client = chromadb.Client()
     collection = client.get_or_create_collection("financial_doc")
 
-    # 3. Requête RAG
     results = collection.query(
         query_texts=["risques financiers, dépendances, réglementation, change"],
-        n_results=5
+        n_results=5,
     )
-    
+
     documents = results.get("documents") or []
     documents_trouves = documents[0] if documents else []
-    
-    # NETTOYAGE : On fusionne les lignes et on supprime les sauts de ligne anarchiques
     contexte_propre = " ".join([doc.replace("\n", " ").strip() for doc in documents_trouves])
 
-    # 4. Appel LLM (Ollama) pour rédiger une analyse propre
-    llm = OllamaLLM(model="llama3")
-    
-    prompt = f"""Tu es un analyste financier senior. Sur la base uniquement du contexte extrait ci-dessous, 
-    rédige un rapport d'analyse structuré listant précisément les risques identifiés. 
-    Fais des phrases complètes, fluides et horizontales.
+    llm = get_analyzer_llm()
+    analyse_generee = None
 
-    Contexte extrait :
-    {contexte_propre}"""
-    
-    try:
-        response = llm.invoke(prompt)
-        analyse_generee = response if isinstance(response, str) else getattr(response, "content", str(response))
-    except Exception:
-        # En cas de problème d'API, repli sur un texte nettoyé manuellement
-        analyse_generee = f"### Analyse des Risques (Mode brut nettoyé)\n\n{contexte_propre}"
+    if llm is not None:
+        prompt = f"""Tu es un analyste financier senior. Sur la base uniquement du contexte extrait ci-dessous,
+rédige un rapport d'analyse structuré listant précisément les risques identifiés.
+Fais des phrases complètes, fluides et horizontales.
 
-    # 5. Mise à jour de l'état
+Contexte extrait :
+{contexte_propre}"""
+        try:
+            response = llm.invoke(prompt)
+            analyse_generee = response if isinstance(response, str) else getattr(response, "content", str(response))
+        except Exception:
+            analyse_generee = None
+
+    if not analyse_generee:
+        analyse_generee = (
+            "### Analyse des Risques (Mode de secours)\n\n"
+            "Aucun backend IA disponible ou erreur de génération. Voici le contexte extrait :\n\n"
+            f"{contexte_propre}"
+        )
+
     return {"analysis": analyse_generee}
