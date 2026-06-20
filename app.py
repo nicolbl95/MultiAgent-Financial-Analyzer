@@ -114,9 +114,9 @@ def run_analysis(pdf_path: str):
             message_html = f'<div class="loading-container">⏳ Temps de chargement estimé : 22 secondes ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
 
             # Seuils progressifs pour afficher des messages d'attente
-            if elapsed_time >= 40:
+            if elapsed_time >= 44:
                 message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span> <span class="delay-text-2">Dernières finalisations…</span>'
-            elif elapsed_time >= 22:
+            elif elapsed_time >= 26:
                 message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span>'
 
             message_html += '</div>'
