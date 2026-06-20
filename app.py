@@ -24,14 +24,14 @@ graph = build_graph()
 
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊", layout="wide")
 
-# Injection du style CSS pour le déplacement global de gauche à droite
+# Injection du style CSS pour le déplacement global sur la piste
 st.markdown(
     """
     <style>
     .jogging-track {
         width: 100%;
         position: relative;
-        height: 65px;
+        height: 70px;
         margin-top: 15px;
         overflow: hidden;
         background: transparent;
@@ -40,12 +40,12 @@ st.markdown(
         position: absolute;
         bottom: 5px;
         left: 0;
-        animation: traverse 5.5s linear infinite;
+        animation: traverse 6s linear infinite;
     }
     @keyframes traverse {
         0% { left: 0%; opacity: 0; }
-        4% { opacity: 1; }
-        92% { opacity: 1; }
+        3% { opacity: 1; }
+        94% { opacity: 1; }
         100% { left: 100%; opacity: 0; }
     }
     </style>
@@ -70,41 +70,89 @@ def run_analysis(pdf_path: str):
         
         runner_placeholder = st.empty()
 
-        # Code SVG brut et articulé du joggeur (proportions humaines, t-shirt rouge, short noir)
-        raw_svg = """<svg width="45" height="55" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        # Nouveau code SVG d'un vrai joggeur articulé (buste projeté en avant, bras pliés à 90°, jambes flexibles)
+        raw_svg = """<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
             <style>
-                .leg-back { animation: run-foule 0.5s ease-in-out infinite alternate; transform-origin: 22px 24px; }
-                .leg-front { animation: run-foule 0.5s ease-in-out infinite alternate; animation-delay: -0.25s; transform-origin: 22px 24px; }
-                .arm-back { animation: run-arm-foule 0.5s ease-in-out infinite alternate; animation-delay: -0.25s; transform-origin: 22px 14px; }
-                .arm-front { animation: run-arm-foule 0.5s ease-in-out infinite alternate; transform-origin: 22px 14px; }
-                .body-group { animation: jog-bob 0.25s ease-in-out infinite alternate; transform-origin: center; }
-                @keyframes run-foule { 0% { transform: rotate(-30deg); } 100% { transform: rotate(35deg); } }
-                @keyframes run-arm-foule { 0% { transform: rotate(40deg); } 100% { transform: rotate(-35deg); } }
-                @keyframes jog-bob { 0% { transform: translateY(0px); } 100% { transform: translateY(-3px); } }
+                /* Animation de la jambe avant : extension et propulsion */
+                .leg-front {
+                    animation: run-leg-front 0.6s infinite linear;
+                    transform-origin: 25px 27px;
+                }
+                /* Animation de la jambe arrière : déphasée pour alterner */
+                .leg-back {
+                    animation: run-leg-back 0.6s infinite linear;
+                    transform-origin: 25px 27px;
+                }
+                /* Balancement des bras en équerre (90°) */
+                .arm-front {
+                    animation: run-arm-front 0.6s infinite linear;
+                    transform-origin: 28px 16px;
+                }
+                .arm-back {
+                    animation: run-arm-back 0.6s infinite linear;
+                    transform-origin: 28px 16px;
+                }
+                /* Oscillation de course du haut du corps (effet de foulée/suspension) */
+                .torso-group {
+                    animation: run-bounce 0.3s infinite alternate ease-in-out;
+                }
+
+                @keyframes run-leg-front {
+                    0% { transform: rotate(-35deg); }
+                    50% { transform: rotate(25deg); }
+                    100% { transform: rotate(-35deg); }
+                }
+                @keyframes run-leg-back {
+                    0% { transform: rotate(25deg); }
+                    50% { transform: rotate(-35deg); }
+                    100% { transform: rotate(25deg); }
+                }
+                @keyframes run-arm-front {
+                    0% { transform: rotate(30deg); }
+                    50% { transform: rotate(-40deg); }
+                    100% { transform: rotate(30deg); }
+                }
+                @keyframes run-arm-back {
+                    0% { transform: rotate(-40deg); }
+                    50% { transform: rotate(30deg); }
+                    100% { transform: rotate(-40deg); }
+                }
+                @keyframes run-bounce {
+                    0% { transform: translateY(0px); }
+                    100% { transform: translateY(-3px); }
+                }
             </style>
-            <g class="body-group" stroke-linecap="round" stroke-linejoin="round">
-                <polyline class="leg-back" points="22,24 16,34 23,44" fill="none" stroke="#EAA481" stroke-width="3.5" />
-                <g class="arm-back" fill="none">
-                    <line x1="22" y1="14" x2="15" y2="21" stroke="#E53935" stroke-width="4" />
-                    <line x1="15" y1="21" x2="10" y2="17" stroke="#EAA481" stroke-width="3.5" />
+            
+            <g class="torso-group">
+                <g class="arm-back" fill="none" stroke-linejoin="round" stroke-linecap="round">
+                    <polyline points="28,16 20,22 14,17" stroke="#E53935" stroke-width="4.5" />
+                    <line x1="14" y1="17" x2="11" y2="15" stroke="#EAA481" stroke-width="4" />
                 </g>
-                <line x1="22" y1="12" x2="22" y2="24" fill="none" stroke="#E53935" stroke-width="5.5" />
-                <circle cx="25" cy="7" r="4.5" fill="#EAA481" stroke="none" />
-                <line x1="22" y1="22" x2="22" y2="26" fill="none" stroke="#212121" stroke-width="6" />
-                <polyline class="leg-front" points="22,24 28,34 22,44" fill="none" stroke="#EAA481" stroke-width="3.5" />
-                <g class="arm-front" fill="none">
-                    <line x1="22" y1="14" x2="28" y2="21" stroke="#E53935" stroke-width="4" />
-                    <line x1="28" y1="21" x2="34" y2="18" stroke="#EAA481" stroke-width="3.5" />
+
+                # 2. Jambe Arrière (Articulée : hanche, genou fléchi, pied)
+                <polyline class="leg-back" points="25,27 16,38 24,47" fill="none" stroke="#EAA481" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+
+                <line x1="25" y1="14" x2="25" y2="27" fill="none" stroke="#E53935" stroke-width="6.5" stroke-linecap="round" />
+                <line x1="24" y1="26" x2="25" y2="30" fill="none" stroke="#212121" stroke-width="7" stroke-linecap="round" />
+                
+                <circle cx="30" cy="8" r="5" fill="#EAA481" stroke="none" />
+
+                # 5. Jambe Avant (Articulée : hanche, genou fléchi, pied)
+                <polyline class="leg-front" points="25,27 31,39 25,48" fill="none" stroke="#EAA481" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+
+                <g class="arm-front" fill="none" stroke-linejoin="round" stroke-linecap="round">
+                    <polyline points="28,16 34,23 41,19" stroke="#E53935" stroke-width="4.5" />
+                    <line x1="41" y1="19" x2="44" y2="17" stroke="#EAA481" stroke-width="4" />
                 </g>
             </g>
         </svg>"""
         
-        # Encodage sécurisé en Base64 pour isoler le composant graphique et supprimer le bug de capture d'écran
+        # Encodage Base64
         b64_svg = base64.b64encode(raw_svg.encode('utf-8')).decode('utf-8')
         runner_html = f"""
         <div class="jogging-track">
             <div class="runner-container">
-                <img src="data:image/svg+xml;base64,{b64_svg}" width="45" height="55" />
+                <img src="data:image/svg+xml;base64,{b64_svg}" width="60" height="60" />
             </div>
         </div>
         """
@@ -117,10 +165,10 @@ def run_analysis(pdf_path: str):
         
         input_state: AgentState = {"pdf_path": pdf_path}
         
-        # Traitement du graphe multi-agents
+        # Traitement
         result = graph.invoke(input_state)
         
-        # Nettoyage de l'animation à la fin
+        # Nettoyage
         runner_placeholder.empty()
         
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
