@@ -6,6 +6,8 @@ import streamlit as st
 import tempfile, os
 from main import build_graph
 
+graph = build_graph()
+
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊")
 st.title("Assistant IA — Analyse Financière Multi-Agents")
 st.write("Déposez un rapport financier PDF. 3 agents IA l'analysent en séquence.")
@@ -23,7 +25,6 @@ if uploaded_file and st.button("Lancer l'analyse IA"):
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
 
-    graph = build_graph()
 
 # On crée la boîte de statut globale
 with st.status("Traitement du document par les agents IA...", expanded=True) as status:
