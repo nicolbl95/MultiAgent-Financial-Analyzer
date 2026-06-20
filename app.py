@@ -60,14 +60,17 @@ with st.sidebar:
     st.write("3. Agent Rédacteur (LangGraph + Groq)")
 
 def run_analysis(pdf_path: str):
-    with st.status("Traitement du document par les agents IA...", expanded=True) as status:
+    with st.status("Traitement du document par les agents IA", expanded=True) as status:
+        status_main = st.empty()
+        status_main.markdown("Traitement du document par les agents IA<span class='loading-dots'><span>.</span><span>.</span><span>.</span></span>", unsafe_allow_html=True)
+
         # Création des zones de texte dynamiques
         step1_placeholder = st.empty()
         step2_placeholder = st.empty()
         step3_placeholder = st.empty()
 
         # --- ÉTAPE 1 ---
-        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF<span class='loading-dots'><span>.</span><span>.</span><span>.</span></span>", unsafe_allow_html=True)
+        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF", unsafe_allow_html=True)
         step2_placeholder.text("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
         step3_placeholder.text("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
         
@@ -75,25 +78,26 @@ def run_analysis(pdf_path: str):
         input_state: AgentState = {"pdf_path": pdf_path}
         # Note : Si votre graph.invoke prend tout le temps global, on peut diviser visuellement ou laisser tourner.
         # Pour refléter la progression réelle ou simulée par étape, on fige l'étape 1 quand elle est prête :
-        time.sleep(1.5) 
-        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF...", unsafe_allow_html=True)
+        time.sleep(1.5)
+        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF", unsafe_allow_html=True)
 
         # --- ÉTAPE 2 ---
-        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers<span class='loading-dots'><span>.</span><span>.</span><span>.</span></span>", unsafe_allow_html=True)
+        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers", unsafe_allow_html=True)
         time.sleep(1.5)
-        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers...", unsafe_allow_html=True)
+        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers", unsafe_allow_html=True)
 
         # --- ÉTAPE 3 ---
-        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse<span class='loading-dots'><span>.</span><span>.</span><span>.</span></span>", unsafe_allow_html=True)
+        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse", unsafe_allow_html=True)
         
         # Appel final du traitement complet (ou de la dernière étape du graphe)
         result = graph.invoke(input_state)
         
         # Finalisation de l'affichage de l'étape 3
-        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse...", unsafe_allow_html=True)
+        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse", unsafe_allow_html=True)
         
         # Changement du statut principal
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
+        status_main.empty()
 
     return result
 
