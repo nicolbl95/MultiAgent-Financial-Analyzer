@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 
 # 1. Configurer la variable d'environnement Protobuf
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
@@ -23,33 +22,6 @@ graph = build_graph()
 
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊", layout="wide")
 
-# Injection du style CSS pour animer les 3 petits points de chargement
-st.markdown(
-    """
-    <style>
-    .loading-dots span {
-        animation-name: blink;
-        animation-duration: 1.4s;
-        animation-iteration-count: infinite;
-        animation-fill-mode: both;
-        font-weight: bold;
-    }
-    .loading-dots span:nth-child(2) {
-        animation-delay: .2s;
-    }
-    .loading-dots span:nth-child(3) {
-        animation-delay: .4s;
-    }
-    @keyframes blink {
-        0% { opacity: .2; }
-        20% { opacity: 1; }
-        100% { opacity: .2; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 st.title("Assistant IA — Analyse Financière Multi-Agents")
 st.write("Déposez un rapport financier PDF. 3 agents IA l'analysent en séquence.")
 
@@ -60,58 +32,32 @@ with st.sidebar:
     st.write("3. Agent Rédacteur (LangGraph + Groq)")
 
 def run_analysis(pdf_path: str):
-    with st.status("Traitement du document par les agents IA", expanded=True) as status:
-        status_main = st.empty()
-        status_main.markdown("Traitement du document par les agents IA<span class='loading-dots'><span>.</span><span>.</span><span>.</span></span>", unsafe_allow_html=True)
+    # st.status génère un cercle de chargement qui tourne pendant l'analyse
+    with st.status("Traitement du document par les agents IA...", expanded=True) as status:
+        st.write("🕵️‍♂️ Étape 1 : L'Agent Extracteur récupère le texte du PDF...")
+        st.write("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
+        st.write("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
 
-        # Création des zones de texte dynamiques
-        step1_placeholder = st.empty()
-        step2_placeholder = st.empty()
-        step3_placeholder = st.empty()
-
-        # --- ÉTAPE 1 ---
-        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF", unsafe_allow_html=True)
-        step2_placeholder.text("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
-        step3_placeholder.text("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
-        
-        # Simulation/Execution Étape 1
         input_state: AgentState = {"pdf_path": pdf_path}
-        # Note : Si votre graph.invoke prend tout le temps global, on peut diviser visuellement ou laisser tourner.
-        # Pour refléter la progression réelle ou simulée par étape, on fige l'étape 1 quand elle est prête :
-        time.sleep(1.5)
-        step1_placeholder.markdown("🕵️‍♂️ **Étape 1 :** L'Agent Extracteur récupère le texte du PDF", unsafe_allow_html=True)
-
-        # --- ÉTAPE 2 ---
-        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers", unsafe_allow_html=True)
-        time.sleep(1.5)
-        step2_placeholder.markdown("🧠 **Étape 2 :** L'Agent Analyste évalue les risques financiers", unsafe_allow_html=True)
-
-        # --- ÉTAPE 3 ---
-        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse", unsafe_allow_html=True)
-        
-        # Appel final du traitement complet (ou de la dernière étape du graphe)
         result = graph.invoke(input_state)
         
-        # Finalisation de l'affichage de l'étape 3
-        step3_placeholder.markdown("✍️ **Étape 3 :** L'Agent Rédacteur finalise la synthèse", unsafe_allow_html=True)
-        
-        # Changement du statut principal
+        # Le statut passe en "complete" : le cercle s'arrête et devient une icône de validation
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
-        status_main.empty()
 
     return result
 
 # Configuration des couleurs et du thème Premium Fintech
 THEME_COLORS = {
-    "primary": "#00E5FF",      
-    "secondary": "#7C4DFF",    
-    "success": "#00E676",      
-    "warning": "#FFD700",      
-    "danger": "#FF5252",       
-    "grid_color": "rgba(255, 255, 255, 0.05)" 
+    "primary": "#00E5FF",      # Bleu électrique néon
+    "secondary": "#7C4DFF",    # Violet profond moderne
+    "success": "#00E676",      # Vert émeraude éclatant
+    "warning": "#FFD700",      # Or / Ambre
+    "danger": "#FF5252",       # Corail / Rouge doux
+    "grid_color": "rgba(255, 255, 255, 0.05)" # Lignes de repère très subtiles
 }
 
 def apply_premium_layout(fig, title_text):
+    """Applique une charte graphique épurée et haut de gamme à un graphique Plotly."""
     fig.update_layout(
         title=dict(
             text=title_text,
@@ -146,6 +92,7 @@ def display_requested_chart(chart_type, report_label, key):
     if report_label not in ["BioSensus 2025", "TechNova", "OmniDrive"]:
         report_label = "OmniDrive"
 
+    # STYLE 1 : Histogramme / Barres
     if chart_type == "STYLE_BARRES":
         fig = go.Figure()
         if report_label == "OmniDrive":
@@ -178,6 +125,7 @@ def display_requested_chart(chart_type, report_label, key):
         apply_premium_layout(fig, title)
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
+    # STYLE 2 : Donut / Courbe Lissée
     elif chart_type == "STYLE_DONUT_OU_LIGNE":
         if report_label == "TechNova":
             fig = go.Figure()
@@ -195,7 +143,7 @@ def display_requested_chart(chart_type, report_label, key):
                 values = [28.90, 33.55]
                 colors = [THEME_COLORS["primary"], THEME_COLORS["secondary"]]
                 title = "🎯 Ventilation Matrix (SaaS vs Matériel)"
-            else: 
+            else:  # BioSensus 2025
                 labels = ['Capitaux Propres', 'Dette Globale']
                 values = [31.2, 22.5]
                 colors = [THEME_COLORS["success"], THEME_COLORS["danger"]]
