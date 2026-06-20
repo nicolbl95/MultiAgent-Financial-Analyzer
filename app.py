@@ -1,10 +1,16 @@
 import os
-# Cette ligne doit être la toute première du projet pour contourner le bug Python 3.14 / Protobuf
+import sys
+
+# 1. Configurer la variable d'environnement Protobuf (Recommandation Python 3.14)
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
-import sys
-# On force Python à inclure le dossier racine du projet pour éviter l'erreur KeyError d'importation
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# 2. Forcer l'enregistrement du chemin du projet et du package agents dans le path
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Enregistrement explicite du sous-module pour éviter le KeyError sous Python 3.14
+sys.modules['agents'] = __import__('agents')
 
 import streamlit as st
 import tempfile
@@ -26,31 +32,27 @@ with st.sidebar:
 uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
 
 if uploaded_file and st.button("Lancer l'analyse IA"):
-    # 1. Création du fichier temporaire
+    # Création du fichier temporaire
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
 
-    # 2. Lancement de la boîte de statut et exécution des agents
+    # Lancement de la boîte de statut et exécution des agents
     with st.status("Traitement du document par les agents IA...", expanded=True) as status:
         st.write("🕵️‍♂️ Étape 1 : L'Agent Extracteur récupère le texte du PDF...")
-        # (Le code de ton graphe s'exécute...)
         
         st.write("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
-        # (L'analyse s'exécute...)
         
         st.write("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
-        # Appel du graphe (désormais tmp_path est bien accessible ici)
         result = graph.invoke({"pdf_path": tmp_path})
         
-        # Quand c'est fini, on coche la boîte en vert !
         status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
 
-    # 3. Nettoyage du fichier temporaire après l'analyse
+    # Nettoyage du fichier temporaire après l'analyse
     if os.path.exists(tmp_path):
         os.unlink(tmp_path)
 
-    # 4. Affichage des résultats générés par les agents
+    # Affichage des résultats générés par les agents
     st.subheader("Analyse des risques")
     st.write(result.get("analysis", "Aucune analyse générée."))
     
