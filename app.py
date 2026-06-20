@@ -1,3 +1,7 @@
+import os
+# Cette ligne doit être la toute première du projet pour contourner le bug Python 3.14 / Protobuf
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import streamlit as st
 import tempfile, os
 from main import build_graph
