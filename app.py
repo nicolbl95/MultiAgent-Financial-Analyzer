@@ -42,7 +42,7 @@ def run_analysis(pdf_path: str):
 
 uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
 
-st.write("Ou bien sélectionnez un rapport PDF d'exemple pour lancer l'analyse immédiatement 🔽:")
+st.write("Ou bien sélectionnez un rapport PDF d'exemple pour lancer l'analyse immédiatement 🔽")
 
 sample_dir = os.path.join(project_root, "sample_reports")
 
