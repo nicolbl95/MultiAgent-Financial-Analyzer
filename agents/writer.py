@@ -29,7 +29,7 @@ def get_writer_llm():
 
     if ChatGroq is not None and groq_api_key:
         return ChatGroq(
-            temperature=0.3,
+            temperature=0.8,
             model_name="llama-3.1-8b-instant",
             groq_api_key=groq_api_key,
         )
