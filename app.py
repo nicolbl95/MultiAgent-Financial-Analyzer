@@ -110,12 +110,13 @@ def run_analysis(pdf_path: str):
         while analysis_thread.is_alive():
             elapsed_time = time.time() - start_time
             
-            # Construction du message selon le temps écoulé
-            message_html = f'<div class="loading-container">⏳ Temps de chargement estimé : 12 secondes ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
+            # Construction du message avec l'estimation fixée à 16 secondes
+            message_html = f'<div class="loading-container">⏳ Temps de chargement estimé : 16 secondes ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
             
-            if elapsed_time >= 20:
+            # Gestion des seuils de messages d'attente progressifs
+            if elapsed_time >= 43:
                 message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span> <span class="delay-text-2">Dernières finalisations…</span>'
-            elif elapsed_time >= 12:
+            elif elapsed_time >= 30:
                 message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span>'
                 
             message_html += '</div>'
