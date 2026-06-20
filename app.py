@@ -1,61 +1,50 @@
 import os
-import sys
+import chromadb
+from langchain_groq import ChatGroq
 
-# 1. Configurer la variable d'environnement Protobuf (Recommandation Python 3.14)
-os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+def analyze_risks(state):
+    # 1. Récupérer l'état
+    if isinstance(state, dict):
+        raw_text = state.get("raw_text", "")
+    else:
+        raw_text = state.raw_text
 
-# 2. Forcer l'enregistrement du chemin du projet et du package agents dans le path
-project_root = os.path.dirname(os.path.abspath(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+    # 2. Connexion à ChromaDB
+    client = chromadb.Client()
+    collection = client.get_or_create_collection("financial_doc")
 
-# Enregistrement explicite du sous-module pour éviter le KeyError sous Python 3.14
-sys.modules['agents'] = __import__('agents')
-
-import streamlit as st
-import tempfile
-from main import AgentState, build_graph
-
-# On initialise le graphe une seule fois au chargement global
-graph = build_graph()
-
-st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊")
-st.title("Assistant IA — Analyse Financière Multi-Agents")
-st.write("Déposez un rapport financier PDF. 3 agents IA l'analysent en séquence.")
-
-with st.sidebar:
-    st.header("Architecture du système")
-    st.write("1. Agent Extracteur (ChromaDB + RAG)")
-    st.write("2. Agent Analyste (ChromaDB + Query)")
-    st.write("3. Agent Rédacteur (LangGraph + Groq)")
-
-uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
-
-if uploaded_file and st.button("Lancer l'analyse IA"):
-    # Création du fichier temporaire
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(uploaded_file.read())
-        tmp_path = tmp.name
-
-    # Lancement de la boîte de statut et exécution des agents
-    with st.status("Traitement du document par les agents IA...", expanded=True) as status:
-        st.write("🕵️‍♂️ Étape 1 : L'Agent Extracteur récupère le texte du PDF...")
-        
-        st.write("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
-        
-        st.write("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
-        input_state: AgentState = {"pdf_path": tmp_path}
-        result = graph.invoke(input_state)
-        
-        status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
-
-    # Nettoyage du fichier temporaire après l'analyse
-    if os.path.exists(tmp_path):
-        os.unlink(tmp_path)
-
-    # Correction de l'affichage : Utilisation de st.markdown à la place de st.write pour éviter l'effet vertical
-    st.subheader("Analyse des risques")
-    st.markdown(result.get("analysis", "Aucune analyse générée."))
+    # 3. Requête RAG
+    results = collection.query(
+        query_texts=["risques financiers, dépendances, réglementation, change"],
+        n_results=5
+    )
     
-    st.subheader("Synthèse pour dirigeants")
-    st.markdown(result.get("summary", "Aucune synthèse générée."))
+    documents = results.get("documents") or []
+    documents_trouves = documents[0] if documents else []
+    
+    # NETTOYAGE : On fusionne les lignes et on supprime les sauts de ligne anarchiques
+    contexte_propre = " ".join([doc.replace("\n", " ").strip() for doc in documents_trouves])
+
+    # 4. On demande à Groq de rédiger une VRAIE analyse propre pour éliminer le style haché
+    llm = ChatGroq(
+        temperature=0.2,
+        model_name="llama-3.1-8b-instant",
+        groq_api_key=os.environ.get("GROQ_API_KEY")
+    )
+    
+    prompt = f"""Tu es un analyste financier senior. Sur la base uniquement du contexte extrait ci-dessous, 
+    rédige un rapport d'analyse structuré listant précisément les risques identifiés. 
+    Fais des phrases complètes, fluides et horizontales.
+
+    Contexte extrait :
+    {contexte_propre}"""
+    
+    try:
+        response = llm.invoke(prompt)
+        analyse_generee = response.content
+    except Exception as e:
+        # En cas de problème d'API, repli sur un texte nettoyé manuellement
+        analyse_generee = f"### Analyse des Risques (Mode brut nettoyé)\n\n{contexte_propre}"
+
+    # 5. Mise à jour de l'état
+    return {"analysis": analyse_generee}

@@ -15,7 +15,7 @@ from agents.analyzer import analyze_risks
 from agents.writer import write_summary
 
 # 1. Définition de la structure de l'état partagé (State)
-class AgentState(TypedDict):
+class AgentState(TypedDict, total=False):
     pdf_path: str
     raw_text: str
     analysis: str

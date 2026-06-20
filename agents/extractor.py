@@ -9,6 +9,9 @@ def extract_and_store(state):
     else:
         pdf_path = state.pdf_path
 
+    if not isinstance(pdf_path, str) or not pdf_path:
+        raise ValueError("pdf_path must be a non-empty string")
+
     # 2. Chargement et découpage du PDF
     loader = PyPDFLoader(pdf_path)
     pages = loader.load()
