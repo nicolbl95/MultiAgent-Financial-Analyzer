@@ -36,7 +36,7 @@ TRADUCTIONS = {
         "sidebar_subtitle": "Structure séquentielle orchestrée par un graphe d'agents internes.",
         "agent1_title": "🕵️‍♂️ 1. Agent Extracteur",
         "agent1_tech": "**Technologies :** `PyPDF` | `ChromaDB` | `RAG`",
-        "agent1_desc": "* **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.\n* **Mémoire :** Vectorise et store temporairement les segments clés pour permettre des recherches documentaires ciblées.",
+        "agent1_desc": "* **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.\n* **Mémoire :** Vectorise et stocke temporairement les segments clés pour permettre des recherches documentaires ciblées.",
         "agent2_title": "🧠 2. Agent Analyste",
         "agent2_tech": "**Technologies :** `LangChain` | `Vector Query` | `ChromaDB`",
         "agent2_desc": "* **Rôle :** Évalue la santé financière, calcule les indicateurs clés de performance (EBITDA, marges) et identifie les facteurs de risques macro/micro-économiques.\n* **Logique :** Croise les données extraites avec des modèles de risques financiers préétablis.",
@@ -102,7 +102,7 @@ TRADUCTIONS = {
     "ES": {
         "title": "Asistente IA — Análisis Financiero Multi-Agente",
         "subtitle": "Suba un informe financiero en PDF de menos de 20 páginas. 3 agentes de IA lo analizan en secuencia.",
-        "sidebar_title": "Arquitectura del Sistema",
+        "sidebar_title": "Arquitectura del Systema",
         "sidebar_subtitle": "Estructura secuencial orquestada por un gráfico de agentes inteligentes.",
         "agent1_title": "🕵️‍♂️ 1. Agente Extractor",
         "agent1_tech": "**Tecnologías:** `PyPDF` | `ChromaDB` | `RAG`",
@@ -131,7 +131,7 @@ TRADUCTIONS = {
         "risk_title": "🕵️‍♂️ Informe de Análisis de Riesgo Específico",
         "chart_complementary": "📊 *Elementos visuales adicionales requeridos por el protocolo financiero :*",
         "chart_title_extract": "📊 Indicadores Clave Extraídos del Informe",
-        "chart_title_struct": "🏛️ Estructura Global Simplifiée",
+        "chart_title_struct": "🏛️ Estructura Global Simplificada",
         "btn_analysis": "Ejecutar Análisis IA"
     }
 }
@@ -269,6 +269,9 @@ with st.sidebar:
     st.markdown(t["infra_desc"])
 
 def run_analysis(pdf_path: str):
+    # Sauvegarde le chemin absolu actuel du fichier traité pour permettre les relances cross-langues automatiques
+    st.session_state["last_analyzed_path"] = pdf_path
+    
     with st.status(t["status_processing"], expanded=True) as status:
         timer_placeholder = st.empty()
         step1_placeholder = st.empty()
@@ -283,14 +286,14 @@ def run_analysis(pdf_path: str):
         lang_full_names = {"FR": "French", "EN": "English", "ES": "Spanish"}
         chosen_lang_name = lang_full_names.get(st.session_state["lang"], "French")
         
-        # Injection robuste de variables et forçage de l'instruction dans l'état transmis au graphe
+        # Injection stricte des consignes linguistiques dans l'état de flux envoyé à LangGraph
         input_state: AgentState = {
             "pdf_path": pdf_path, 
             "language": st.session_state["lang"],
             "target_language": st.session_state["lang"],
             "current_language": st.session_state["lang"],
-            "system_instruction": f"CRITICAL REQUIREMENT: You must absolutely write the final report, analysis, and executive summary entirely in the {chosen_lang_name} language. Do not output any French text if English or Spanish is selected.",
-            "instructions": f"Translate all insights and findings. The output language MUST be {chosen_lang_name}."
+            "system_instruction": f"CRITICAL: You must write the entire output, report and financial summary in {chosen_lang_name} language. Do not output French text.",
+            "instructions": f"The output language MUST be {chosen_lang_name}."
         }
 
         def worker():
@@ -501,8 +504,12 @@ for col, (label, path) in zip(cols, example_reports.items()):
             else:
                 st.caption("❌")
 
-# Lancement de l'analyse ou récupération depuis la session
-if selected_example_label is not None and selected_example is not None:
+# --- EXECUTION / AUTO-RELANCE SI LE DOCUMENT EST DÉJÀ INITIALISÉ DANS UNE AUTRE LANGUE ---
+if "last_analysis_result" not in st.session_state and "last_analyzed_path" in st.session_state:
+    # Déclenchement automatique immédiat lors du changement de langue via l'en-tête
+    run_analysis(st.session_state["last_analyzed_path"])
+
+elif selected_example_label is not None and selected_example is not None:
     if not os.path.exists(selected_example):
         if st.session_state["lang"] == "EN": st.error(f"File '{selected_example_label}' not found.")
         elif st.session_state["lang"] == "ES": st.error(f"Archivo '{selected_example_label}' no encontrado.")

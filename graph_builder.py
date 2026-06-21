@@ -22,7 +22,9 @@ class AgentState(TypedDict, total=False):
     summary: str
     language: str
     target_language: str
+    current_language: str
     system_instruction: str
+    instructions: str
 
 # 2. Fonction maîtresse qui construit et compile le graphe d'agents
 def build_graph():
