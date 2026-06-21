@@ -24,7 +24,121 @@ graph = build_graph()
 
 st.set_page_config(page_title="Analyseur Financier IA", page_icon="📊", layout="wide")
 
-# Injection CSS pour le cercle de chargement personnalisé et l'alignement
+# --- GESTION DE LA TRADUCTION ET DES 3 LANGUES ---
+if "lang" not in st.session_state:
+    st.session_state["lang"] = "FR"  # Français par défaut
+
+TRADUCTIONS = {
+    "FR": {
+        "title": "Assistant IA — Analyse Financière Multi-Agents",
+        "subtitle": "Déposez un rapport financier PDF de moins de 20 pages. 3 agents IA l'analysent en séquence.",
+        "sidebar_title": "⚙️ Architecture du Système",
+        "sidebar_subtitle": "Structure séquentielle orchestrée par un graphe d'agents internes.",
+        "agent1_title": "🕵️‍♂️ 1. Agent Extracteur",
+        "agent1_tech": "**Technologies :** `PyPDF` | `ChromaDB` | `RAG`",
+        "agent1_desc": "* **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.\n* **Mémoire :** Vectorise et stocke temporairement les segments clés pour permettre des recherches documentaires ciblées.",
+        "agent2_title": "🧠 2. Agent Analyste",
+        "agent2_tech": "**Technologies :** `LangChain` | `Vector Query` | `ChromaDB`",
+        "agent2_desc": "* **Rôle :** Évalue la santé financière, calcule les indicateurs clés de performance (EBITDA, marges) et identifie les facteurs de risques macro/micro-économiques.\n* **Logique :** Croise les données extraites avec des modèles de risques financiers préétablis.",
+        "agent3_title": "✍️ 3. Agent Rédacteur",
+        "agent3_tech": "**Technologies :** `LangGraph` | `Groq Cloud` | `Llama 3`",
+        "agent3_desc": "* **Rôle :** Synthétise les conclusions brutes de l'analyste sous la forme d'un rapport structuré pour le Comité de Direction.\n* **Rendu :** Génère les balises de graphiques dynamiques (`Plotly`) et injecte la structure visuelle finale.",
+        "infra_title": "💻 Infrastructure Tech",
+        "infra_desc": "* **Orchestration :** LangGraph (Stateful Dataflow)\n* **Inférence :** Groq API (Ultra-low latency)\n* **Interface :** Streamlit Enterprise Layout",
+        "choose_pdf": "Choisir un PDF",
+        "example_pdf": "Ou bien sélectionnez un rapport PDF d'exemple pour lancer l'analyse immédiatement 🔽",
+        "status_processing": "Traitement du document par les agents IA...",
+        "step1": "🕵️‍♂️ Étape 1 : L'Agent Extracteur scanne et indexe le document...",
+        "step2": "🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...",
+        "step3": "✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...",
+        "timer_estimated": "Temps de chargement estimé : 22 secondes",
+        "delay1": "Désolé, cela prend plus de temps que prévu...",
+        "delay2": "Dernières finalisations…",
+        "done": "Analyse terminée avec succès !",
+        "error_msg": "Une erreur est survenue lors de l'analyse :",
+        "error_tip": "💡 Conseil pour les documents volumineux : Essayez d'isoler uniquement les pages de bilan et de compte de résultat avant l'envoi.",
+        "section_break": "✍️ Synthèse Executive pour le Comité de Direction",
+        "risk_title": "🕵️‍♂️ Rapport Spécifique d'Analyse des Risques",
+        "chart_complementary": "📊 *Éléments visuels complémentaires requis par le protocole financier :*",
+        "chart_title_extract": "📊 Indicateurs Clés Extraits du Rapport",
+        "chart_title_struct": "🏛️ Structure Globale Simplifiée",
+        "btn_analysis": "Lancer l'analyse IA"
+    },
+    "EN": {
+        "title": "AI Assistant — Multi-Agent Financial Analysis",
+        "subtitle": "Upload a financial PDF report of less than 20 pages. 3 AI agents analyze it in sequence.",
+        "sidebar_title": "⚙️ System Architecture",
+        "sidebar_subtitle": "Sequential structure orchestrated by a smart agent graph.",
+        "agent1_title": "🕵️‍♂️ 1. Extractor Agent",
+        "agent1_tech": "**Technologies:** `PyPDF` | `ChromaDB` | `RAG`",
+        "agent1_desc": "* **Role:** Analyzes PDF structure, segments text and extracts numerical data tables.\n* **Memory:** Vectorizes and temporarily stores key segments for targeted document searches.",
+        "agent2_title": "🧠 2. Analyst Agent",
+        "agent2_tech": "**Technologies:** `LangChain` | `Vector Query` | `ChromaDB`",
+        "agent2_desc": "* **Role:** Evaluates financial health, calculates key performance indicators (EBITDA, margins) and identifies macro/micro economic risk factors.\n* **Logic:** Cross-references extracted data with pre-established financial risk models.",
+        "agent3_title": "✍️ 3. Writer Agent",
+        "agent3_tech": "**Technologies:** `LangGraph` | `Groq Cloud` | `Llama 3`",
+        "agent3_desc": "* **Role:** Synthesizes raw findings from the analyst into a structured report for the Board of Directors.\n* **Rendering:** Generates dynamic chart tags (`Plotly`) and injects the final visual structure.",
+        "infra_title": "💻 Tech Infrastructure",
+        "infra_desc": "* **Orchestration:** LangGraph (Stateful Dataflow)\n* **Inference:** Groq API (Ultra-low latency)\n* **Interface:** Streamlit Enterprise Layout",
+        "choose_pdf": "Choose a PDF",
+        "example_pdf": "Or select a sample PDF report to launch the analysis immediately 🔽",
+        "status_processing": "Processing document by AI agents...",
+        "step1": "🕵️‍♂️ Step 1: The Extractor Agent scans and indexes the document...",
+        "step2": "🧠 Step 2: The Analyst Agent evaluates financial risks...",
+        "step3": "✍️ Step 3: The Writer Agent finalizes the summary...",
+        "timer_estimated": "Estimated loading time: 22 seconds",
+        "delay1": "Sorry, this is taking longer than expected...",
+        "delay2": "Final touches…",
+        "done": "Analysis completed successfully!",
+        "error_msg": "An error occurred during analysis:",
+        "error_tip": "💡 Tip for large documents: Try isolating only the balance sheet and income statement pages before uploading.",
+        "section_break": "✍️ Executive Summary for the Board of Directors",
+        "risk_title": "🕵️‍♂️ Specific Risk Analysis Report",
+        "chart_complementary": "📊 *Additional visual elements required by the financial protocol:*",
+        "chart_title_extract": "📊 Key Indicators Extracted from Report",
+        "chart_title_struct": "🏛️ Simplified Global Structure",
+        "btn_analysis": "Run AI Analysis"
+    },
+    "ES": {
+        "title": "Asistente IA — Análisis Financiero Multi-Agente",
+        "subtitle": "Suba un informe financiero en PDF de menos de 20 páginas. 3 agentes de IA lo analizan en secuencia.",
+        "sidebar_title": "⚙️ Arquitectura del Sistema",
+        "sidebar_subtitle": "Estructura secuencial orquestada por un gráfico de agentes inteligentes.",
+        "agent1_title": "🕵️‍♂️ 1. Agente Extractor",
+        "agent1_tech": "**Tecnologías:** `PyPDF` | `ChromaDB` | `RAG`",
+        "agent1_desc": "* **Rol:** Analiza la estructura del PDF, segmenta el texto y extrae tablas de datos numéricos.\n* **Memoria:** Vectoriza y almacena temporalmente segmentos clave para búsquedas de documentos específicas.",
+        "agent2_title": "🧠 2. Agente Analista",
+        "agent2_tech": "**Tecnologías:** `LangChain` | `Vector Query` | `ChromaDB`",
+        "agent2_desc": "* **Rol:** Evalúa la salud financiera, calcula indicadores clave de rendimiento (EBITDA, márgenes) e identifica factores de riesgo macro/microeconómicos.\n* **Lógica:** Cruza los datos extraídos con modelos de riesgo financiero preestablecidos.",
+        "agent3_title": "✍️ 3. Agente Redactor",
+        "agent3_tech": "**Tecnologías:** `LangGraph` | `Groq Cloud` | `Llama 3`",
+        "agent3_desc": "* **Rol:** Sintetiza los hallazgos brutos del analista en un informe estructurado para el Consejo de Administración.\n* **Visualización:** Genera etiquetas de gráficos dinámicos (`Plotly`) e inyecta la estructura visual final.",
+        "infra_title": "💻 Infraestructura Tecnológica",
+        "infra_desc": "* **Orquestación:** LangGraph (Stateful Dataflow)\n* **Inferencia:** Groq API (Ultra-low latency)\n* **Interfaz:** Streamlit Enterprise Layout",
+        "choose_pdf": "Elegir un PDF",
+        "example_pdf": "O seleccione un informe PDF de muestra para iniciar el análisis de inmediato 🔽",
+        "status_processing": "Procesando el documento por agentes de IA...",
+        "step1": "🕵️‍♂️ Paso 1: El Agente Extractor escanea e indexa el documento...",
+        "step2": "🧠 Paso 2: El Agente Analista evalúa los riesgos financieros...",
+        "step3": "✍️ Paso 3: El Agente Redactor finaliza el resumen...",
+        "timer_estimated": "Tiempo estimado de carga: 22 segundos",
+        "delay1": "Disculpe, esto está tardando más de lo previsto...",
+        "delay2": "Últimos retoques…",
+        "done": "¡Análisis completado con éxito!",
+        "error_msg": "Ocurrió un error durante el análisis:",
+        "error_tip": "💡 Consejo para documentos grandes: Intente aislar solo las páginas del balance y del estado de resultados antes de subirlas.",
+        "section_break": "✍️ Resumen Ejecutivo para el Consejo de Administración",
+        "risk_title": "🕵️‍♂️ Informe de Análisis de Riesgo Específico",
+        "chart_complementary": "📊 *Elementos visuales adicionales requeridos por el protocolo financiero :*",
+        "chart_title_extract": "📊 Indicadores Clave Extraídos del Informe",
+        "chart_title_struct": "🏛️ Estructura Global Simplificada",
+        "btn_analysis": "Ejecutar Análisis IA"
+    }
+}
+
+t = TRADUCTIONS[st.session_state["lang"]]
+
+# --- INJECTION CSS PREMIUM POUR LES ICONES DE LANGUE ET L'ANIMATION ---
 st.markdown(
     """
     <style>
@@ -56,6 +170,29 @@ st.markdown(
         font-weight: normal;
         animation: fadeIn 0.5s ease-in-out;
     }
+    
+    /* Ciblage spécifique et customisation des boutons de langue */
+    div[data-testid="stButton"] button {
+        border-radius: 50% !important;
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+        font-size: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 2px solid rgba(255,255,255,0.1) !important;
+        background-color: #1E222A !important;
+        transition: all 0.3s ease;
+    }
+    
+    /* Classe injectée dynamiquement pour l'état actif (entouré de vert) */
+    .active-lang-btn div[data-testid="stButton"] button {
+        border: 3px solid #00E676 !important;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.4) !important;
+        transform: scale(1.08);
+    }
+    
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
@@ -68,98 +205,103 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("Assistant IA — Analyse Financière Multi-Agents")
-st.write("Déposez un rapport financier PDF de moins de 20 pages. 3 agents IA l'analysent en séquence.")
+# --- RENDU DES 3 BOUTONS DE LANGUE TOUT EN HAUT À DROITE ---
+top_col1, top_col2, top_col3, top_col4 = st.columns([8.5, 0.5, 0.5, 0.5])
 
+with top_col2:
+    if st.session_state["lang"] == "FR":
+        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
+    if st.button("🇫🇷", key="btn_fr"):
+        st.session_state["lang"] = "FR"
+        st.rerun()
+    if st.session_state["lang"] == "FR":
+        st.markdown('</div>', unsafe_allow_html=True)
+
+with top_col3:
+    if st.session_state["lang"] == "EN":
+        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
+    if st.button("🇬🇧", key="btn_en"):
+        st.session_state["lang"] = "EN"
+        st.rerun()
+    if st.session_state["lang"] == "EN":
+        st.markdown('</div>', unsafe_allow_html=True)
+
+with top_col4:
+    if st.session_state["lang"] == "ES":
+        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
+    if st.button("🇪🇸", key="btn_es"):
+        st.session_state["lang"] = "ES"
+        st.rerun()
+    if st.session_state["lang"] == "ES":
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+st.title(t["title"])
+st.write(t["subtitle"])
+
+# --- BARRE LATÉRALE ENRICHIE ---
 with st.sidebar:
-    st.header("⚙️ Architecture du Système")
-    st.markdown("Structure séquentielle orchestrée par un graphe d'agents intelligents.")
+    st.header(t["sidebar_title"])
+    st.markdown(t["sidebar_subtitle"])
     st.markdown("---")
     
-    # Étape 1
-    st.subheader("🕵️‍♂️ 1. Agent Extracteur")
-    st.caption("**Technologies :** `PyPDF` | `ChromaDB` | `RAG`")
-    st.markdown(
-        """
-        * **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.
-        * **Mémoire :** Vectorise et stocke temporairement les segments clés pour permettre des recherches documentaires ciblées.
-        """
-    )
+    st.subheader(t["agent1_title"])
+    st.caption(t["agent1_tech"])
+    st.markdown(t["agent1_desc"])
     st.markdown("---")
     
-    # Étape 2
-    st.subheader("🧠 2. Agent Analyste")
-    st.caption("**Technologies :** `LangChain` | `Vector Query` | `ChromaDB`")
-    st.markdown(
-        """
-        * **Rôle :** Évalue la santé financière, calcule les indicateurs clés de performance (EBITDA, marges) et identifie les facteurs de risques macro/micro-économiques.
-        * **Logique :** Croise les données extraites avec des modèles de risques financiers préétablis.
-        """
-    )
+    st.subheader(t["agent2_title"])
+    st.caption(t["agent2_tech"])
+    st.markdown(t["agent2_desc"])
     st.markdown("---")
     
-    # Étape 3
-    st.subheader("✍️ 3. Agent Rédacteur")
-    st.caption("**Technologies :** `LangGraph` | `Groq Cloud` | `Llama 3`")
-    st.markdown(
-        """
-        * **Rôle :** Synthétise les conclusions brutes de l'analyste sous la forme d'un rapport structuré pour le Comité de Direction.
-        * **Rendu :** Génère les balises de graphiques dynamiques (`Plotly`) et injecte la structure visuelle finale.
-        """
-    )
+    st.subheader(t["agent3_title"])
+    st.caption(t["agent3_tech"])
+    st.markdown(t["agent3_desc"])
     st.markdown("---")
     
-    # Spécifications de l'infrastructure
-    st.subheader("💻 Infrastructure Tech")
-    st.markdown(
-        """
-        * **Orchestration :** LangGraph (Stateful Dataflow)
-        * **Inférence :** Groq API (Ultra-low latency)
-        * **Interface :** Streamlit Enterprise Layout
-        """
-    )
+    st.subheader(t["infra_title"])
+    st.markdown(t["infra_desc"])
 
 def run_analysis(pdf_path: str):
-    with st.status("Traitement du document par les agents IA...", expanded=True) as status:
+    with st.status(t["status_processing"], expanded=True) as status:
         
-        # Initialisation des placeholders dynamiques
         timer_placeholder = st.empty()
         step1_placeholder = st.empty()
         step2_placeholder = st.empty()
         step3_placeholder = st.empty()
         
-        step1_placeholder.write("🕵️‍♂️ Étape 1 : L'Agent Extracteur scanne et indexe le document...")
-        step2_placeholder.write("🧠 Étape 2 : L'Agent Analyste évalue les risques financiers...")
-        step3_placeholder.write("✍️ Étape 3 : L'Agent Rédacteur finalise la synthèse...")
+        step1_placeholder.write(t["step1"])
+        step2_placeholder.write(t["step2"])
+        step3_placeholder.write(t["step3"])
 
-        # Préparation du conteneur pour le résultat du thread
         thread_result = {}
-        input_state: AgentState = {"pdf_path": pdf_path}
+        # PASSAGE DES PARAMÈTRES DE LANGUE À L'IA : Permet d'analyser n'importe quel rapport d'origine et de forcer la rédaction finale
+        input_state: AgentState = {
+            "pdf_path": pdf_path, 
+            "language": st.session_state["lang"],
+            "target_language": st.session_state["lang"]
+        }
 
-        # Fonction exécutée en tâche de fond pour éviter de geler l'UI
         def worker():
             try:
                 thread_result["output"] = graph.invoke(input_state)
             except Exception as e:
                 thread_result["error"] = e
 
-        # Lancement du thread
         analysis_thread = threading.Thread(target=worker)
         start_time = time.time()
         analysis_thread.start()
 
-        # Boucle de surveillance avec vos timings exacts
         while analysis_thread.is_alive():
             elapsed_time = time.time() - start_time
             
-            # Message de base fixé à 22 secondes
-            message_html = f'<div class="loading-container">⏳ Temps de chargement estimé : 22 secondes ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
+            message_html = f'<div class="loading-container">⏳ {t["timer_estimated"]} ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
             
-            # Seuils d'affichage dynamique demandés
             if elapsed_time >= 40:
-                message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span> <span class="delay-text-2">Dernières finalisations…</span>'
+                message_html += f' <span class="delay-text-1">{t["delay1"]}</span> <span class="delay-text-2">{t["delay2"]}</span>'
             elif elapsed_time >= 22:
-                message_html += ' <span class="delay-text-1">Désolé, cela prend plus de temps que prévu...</span>'
+                message_html += f' <span class="delay-text-1">{t["delay1"]}</span>'
                 
             message_html += '</div>'
             
@@ -170,18 +312,25 @@ def run_analysis(pdf_path: str):
         total_duration = time.time() - start_time
 
         if "error" in thread_result:
-            st.error(f"Une erreur est survenue lors de l'analyse : {thread_result['error']}")
-            st.info("💡 Conseil pour les documents volumineux : Essayez d'isoler uniquement les pages de bilan et de compte de résultat avant l'envoi.")
+            st.error(f"{t['error_msg']} {thread_result['error']}")
+            st.info(t["error_tip"])
             return None
 
         result = thread_result.get("output")
         
+        if st.session_state["lang"] == "EN":
+            completed_text, seconds_text = "✅ Analysis executed in", "seconds (Completed)"
+        elif st.session_state["lang"] == "ES":
+            completed_text, seconds_text = "✅ Análisis ejecutado en", "segundos (Completado)"
+        else:
+            completed_text, seconds_text = "✅ Analyse exécutée en", "secondes (Terminé)"
+        
         timer_placeholder.markdown(
-            f'<div class="loading-container">✅ Analyse exécutée en {int(total_duration)} secondes (Terminé)</div>', 
+            f'<div class="loading-container">{completed_text} {int(total_duration)} {seconds_text}</div>', 
             unsafe_allow_html=True
         )
         
-        status.update(label="Analyse terminée avec succès !", state="complete", expanded=False)
+        status.update(label=t["done"], state="complete", expanded=False)
 
     return result
 
@@ -225,55 +374,65 @@ def apply_premium_layout(fig, title_text):
     fig.update_xaxes(showgrid=False, linecolor="rgba(255,255,255,0.1)", zeroline=False)
     fig.update_yaxes(showgrid=True, gridcolor=THEME_COLORS["grid_color"], zeroline=False, linecolor="rgba(255,255,255,0.1)")
 
-# Génération des graphiques
 def display_requested_chart(chart_type, report_label, key):
-    # Fallback par défaut si le document n'est pas un exemple connu (comme AXA)
     if report_label not in ["BioSensus 2025", "TechNova", "OmniDrive"]:
         if chart_type == "STYLE_BARRES":
             fig = go.Figure()
+            if st.session_state["lang"] == "EN": x_labels = ['Debt / Equity', 'Operating Margin', 'Yield']
+            elif st.session_state["lang"] == "ES": x_labels = ['Deuda / Capital', 'Margen Operativo', 'Rendimiento']
+            else: x_labels = ['Dette / Équité', 'Marge Opérationnelle', 'Rendement']
+            
             fig.add_trace(go.Bar(
-                x=['Dette / Équité', 'Marge Opérationnelle', 'Rendement'], y=[42.5, 14.8, 8.2], 
+                x=x_labels, y=[42.5, 14.8, 8.2], 
                 marker=dict(color=THEME_COLORS["primary"], cornerradius=6),
                 text=['42.5%', '14.8%', '8.2%'], textposition='auto'
             ))
-            apply_premium_layout(fig, "📊 Indicateurs Clés Extraits du Rapport")
+            apply_premium_layout(fig, t["chart_title_extract"])
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
         else:
-            fig = px.pie(values=[65, 35], names=['Actifs Courants', 'Immobilisations'], hole=0.55,
+            if st.session_state["lang"] == "EN": names_labels = ['Current Assets', 'Fixed Assets']
+            elif st.session_state["lang"] == "ES": names_labels = ['Activos Corrientes', 'Activos Fijos']
+            else: names_labels = ['Activos Courants', 'Immobilisations']
+            
+            fig = px.pie(values=[65, 35], names=names_labels, hole=0.55,
                          color_discrete_sequence=[THEME_COLORS["success"], THEME_COLORS["secondary"]])
-            apply_premium_layout(fig, "🏛️ Structure Globale Simplifiée")
+            apply_premium_layout(fig, t["chart_title_struct"])
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
         return
 
+    # Graphiques d'exemples
     if chart_type == "STYLE_BARRES":
         fig = go.Figure()
         if report_label == "OmniDrive":
             fig.add_trace(go.Bar(
                 x=['2024', '2025'], y=[48.12, 62.45], 
                 text=['48.12 M€', '62.45 M€'], textposition='auto', 
-                marker=dict(color=THEME_COLORS["primary"], cornerradius=8),
-                hovertemplate="<b>Année %{x}</b><br>CA : %{y} M€<extra></extra>"
+                marker=dict(color=THEME_COLORS["primary"], cornerradius=8)
             ))
-            title = "📈 Trajectoire & Croissance du Chiffre d'Affaires"
+            title = "📈 Revenue Trajectory" if st.session_state["lang"] == "EN" else ("📈 Trayectoria de Ingresos" if st.session_state["lang"] == "ES" else "📈 Trajectoire & Croissance du Chiffre d'Affaires")
         elif report_label == "TechNova":
-            categories = ['Marge Brute', 'R&D Investissements', 'EBITDA']
+            if st.session_state["lang"] == "EN": categories = ['Gross Margin', 'R&D Investments', 'EBITDA']
+            elif st.session_state["lang"] == "ES": categories = ['Margen Bruto', 'Inversiones I+D', 'EBITDA']
+            else: categories = ['Marge Brute', 'R&D Investissements', 'EBITDA']
             values = [32.14, 18.5, 12.91]
             fig.add_trace(go.Bar(
                 x=categories, y=values, 
                 marker=dict(color=[THEME_COLORS["primary"], THEME_COLORS["secondary"], THEME_COLORS["success"]], cornerradius=6),
                 text=[f"{v} M€" for v in values], textposition='auto'
             ))
-            title = "⚡ Indicateurs de Performance Opérationnelle"
+            title = "⚡ Operational Indicators" if st.session_state["lang"] == "EN" else ("⚡ Indicadores Operativos" if st.session_state["lang"] == "ES" else "⚡ Indicateurs de Performance Opérationnelle")
         elif report_label == "BioSensus 2025":
-            categories = ['Marge Brute', 'EBITDA Ajusté', 'Résultat Opérationnel (EBIT)']
+            if st.session_state["lang"] == "EN": categories = ['Gross Margin', 'Adjusted EBITDA', 'Operating Income (EBIT)']
+            elif st.session_state["lang"] == "ES": categories = ['Margen Bruto', 'EBITDA Ajustado', 'Resultado Operativo (EBIT)']
+            else: categories = ['Marge Brute', 'EBITDA Ajusté', 'Résultat Opérationnel (EBIT)']
             values = [32.02, 14.15, 8.92]
             fig.add_trace(go.Bar(
                 x=categories, y=values, 
                 marker=dict(color=[THEME_COLORS["success"], THEME_COLORS["warning"], THEME_COLORS["primary"]], cornerradius=6),
                 text=[f"{v} M€" for v in values], textposition='auto'
             ))
-            title = "📊 Soldes Intermédiaires de Gestion & Marges"
+            title = "📊 Financial Margins" if st.session_state["lang"] == "EN" else ("📊 Márgenes Financieros" if st.session_state["lang"] == "ES" else "📊 Soldes Intermédiaires de Gestion & Marges")
         
         apply_premium_layout(fig, title)
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
@@ -281,25 +440,31 @@ def display_requested_chart(chart_type, report_label, key):
     elif chart_type == "STYLE_DONUT_OU_LIGNE":
         if report_label == "TechNova":
             fig = go.Figure()
+            if st.session_state["lang"] == "EN": x_axis = ['2024', '2025', '2026 Forecast']
+            elif st.session_state["lang"] == "ES": x_axis = ['2024', '2025', 'Previsión 2026']
+            else: x_axis = ['2024', '2025', 'Prévisions 2026']
             fig.add_trace(go.Scatter(
-                x=['2024', '2025', 'Prévisions 2026'], y=[59.3, 84.15, 120.0], 
+                x=x_axis, y=[59.3, 84.15, 120.0], 
                 mode='lines+markers', line=dict(color=THEME_COLORS["warning"], width=4, shape="spline"),
-                marker=dict(size=8, color="#FFFFFF", line=dict(color=THEME_COLORS["warning"], width=2)),
-                hovertemplate="<b>%{x}</b><br>Revenus : %{y} M€<extra></extra>"
+                marker=dict(size=8, color="#FFFFFF", line=dict(color=THEME_COLORS["warning"], width=2))
             ))
-            title = "📉 Trajectoire Spécifique de Croissance Pluriannuelle"
+            title = "📉 Growth Trajectory" if st.session_state["lang"] == "EN" else ("📉 Trayectoria de Crecimiento" if st.session_state["lang"] == "ES" else "📉 Trajectoire Spécifique de Croissance Pluriannuelle")
             apply_premium_layout(fig, title)
         else:
             if report_label == "OmniDrive":
-                labels = ['SaaS Cloud (Abonnements)', 'Matériel & Intégration Usines']
+                if st.session_state["lang"] == "EN": labels = ['SaaS Cloud', 'Hardware']
+                elif st.session_state["lang"] == "ES": labels = ['SaaS Cloud', 'Hardware']
+                else: labels = ['SaaS Cloud (Abonnements)', 'Matériel & Intégration Usines']
                 values = [28.90, 33.55]
                 colors = [THEME_COLORS["primary"], THEME_COLORS["secondary"]]
-                title = "🎯 Ventilation Matrix (SaaS vs Matériel)"
+                title = "🎯 Breakdown Matrix" if st.session_state["lang"] == "EN" else ("🎯 Matriz de Distribución" if st.session_state["lang"] == "ES" else "🎯 Ventilation Matrix (SaaS vs Matériel)")
             else: 
-                labels = ['Capitaux Propres', 'Dette Globale']
+                if st.session_state["lang"] == "EN": labels = ['Equity', 'Total Debt']
+                elif st.session_state["lang"] == "ES": labels = ['Capital Propio', 'Deuda Total']
+                else: labels = ['Capitaux Propres', 'Dette Globale']
                 values = [31.2, 22.5]
                 colors = [THEME_COLORS["success"], THEME_COLORS["danger"]]
-                title = "🏛️ Équilibre du Financement"
+                title = "🏛️ Funding Structure" if st.session_state["lang"] == "EN" else ("🏛️ Estructura de Financiación" if st.session_state["lang"] == "ES" else "🏛️ Équilibre du Financement")
 
             fig = px.pie(values=values, names=labels, hole=0.55, color_discrete_sequence=colors)
             fig.update_traces(textposition='outside', textinfo='percent+label')
@@ -308,17 +473,15 @@ def display_requested_chart(chart_type, report_label, key):
             
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
-# Gestionnaire de rendu strict
 def render_dynamic_content_with_strict_two_charts(analysis_text, summary_text, report_label):
     full_text = f"{analysis_text}\n---SECTION_BREAK---\n{summary_text}"
     lines = full_text.split("\n")
-    
     charts_rendered = 0
     
     for idx, line in enumerate(lines):
         if "---SECTION_BREAK---" in line:
             st.markdown("---")
-            st.subheader("✍️ Synthèse Executive pour le Comité de Direction")
+            st.subheader(t["section_break"])
             continue
             
         is_tag = any(tag in line for tag in ["[GRAPH_EVOLUTION]", "[GRAPH_REPARTITION]", "[GRAPH_PERFORMANCE]"])
@@ -333,12 +496,12 @@ def render_dynamic_content_with_strict_two_charts(analysis_text, summary_text, r
                 charts_rendered += 1
         else:
             if idx == 0 and "---SECTION_BREAK---" not in lines[0]:
-                st.subheader("🕵️‍♂️ Rapport Spécifique d'Analyse des Risques")
+                st.subheader(t["risk_title"])
             st.markdown(line)
 
     if charts_rendered < 2:
         st.markdown("---")
-        st.caption("📊 *Éléments visuels complémentaires requis par le protocole financier :*")
+        st.caption(t["chart_complementary"])
         c1, c2 = st.columns(2)
         if charts_rendered == 0:
             with c1: display_requested_chart("STYLE_BARRES", report_label, "force_chart_1")
@@ -347,8 +510,8 @@ def render_dynamic_content_with_strict_two_charts(analysis_text, summary_text, r
             display_requested_chart("STYLE_DONUT_OU_LIGNE", report_label, "force_chart_2")
 
 
-uploaded_file = st.file_uploader("Choisir un PDF", type="pdf")
-st.write("Ou bien sélectionnez un rapport PDF d'exemple pour lancer l'analyse immédiatement 🔽")
+uploaded_file = st.file_uploader(t["choose_pdf"], type="pdf")
+st.write(t["example_pdf"])
 
 sample_dir = os.path.join(project_root, "sample_reports")
 sample_files = {
@@ -375,7 +538,7 @@ for col, (label, path) in zip(cols, example_reports.items()):
     with col:
         sub_col1, sub_col2 = st.columns([3, 1])
         with sub_col1:
-            if st.button(label, use_container_width=True):
+            if st.button(label, use_container_width=True, key=f"btn_ex_{label}"):
                 selected_example = path
                 selected_example_label = label
                 st.session_state["active_label"] = label
@@ -388,19 +551,19 @@ for col, (label, path) in zip(cols, example_reports.items()):
 
 result = None
 
-# Déclenchement automatique depuis l'un des boutons d'exemples
 if selected_example_label is not None and selected_example is not None:
     if not os.path.exists(selected_example):
-        st.error(f"Fichier d'exemple introuvable pour '{selected_example_label}'.")
+        if st.session_state["lang"] == "EN": st.error(f"File '{selected_example_label}' not found.")
+        elif st.session_state["lang"] == "ES": st.error(f"Archivo '{selected_example_label}' no encontrado.")
+        else: st.error(f"Fichier d'exemple introuvable pour '{selected_example_label}'.")
     else:
         result = run_analysis(selected_example)
 
-# Déclenchement depuis l'upload manuel
-elif uploaded_file and st.button("Lancer l'analyse IA"):
+elif uploaded_file and st.button(t["btn_analysis"]):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
-    st.session_state["active_label"] = "AXA Document"
+    st.session_state["active_label"] = "Custom Upload"
     result = run_analysis(tmp_path)
     if os.path.exists(tmp_path): os.unlink(tmp_path)
 
