@@ -112,7 +112,7 @@ TRADUCTIONS = {
         "agent2_desc": "* **Rol:** Evalúa la salud financiera, calcula indicadores clave de rendimiento (EBITDA, márgenes) e identifica factores de riesgo macro/microeconómicos.\n* **Lógica:** Cruza los datos extraídos con modelos de riesgo financiero preestablecidos.",
         "agent3_title": "✍️ 3. Agente Redactor",
         "agent3_tech": "**Tecnologías:** `LangGraph` | `Groq Cloud` | `Llama 3`",
-        "agent3_desc": "* **Rol:** Sintetiza los hallazgos brutos del analista en un informe estruturado para el Consejo de Administración.\n* **Visualización:** Genera etiquetas de gráficos dinámicos (`Plotly`) e inyecta la estructura visual final.",
+        "agent3_desc": "* **Rol:** Sintetiza los hallazgos brutos del analista en un informe estructurado para el Consejo de Administración.\n* **Visualización:** Genera etiquetas de gráficos dinámicos (`Plotly`) e inyecta la estructura visual final.",
         "infra_title": "💻 Infraestructura Tecnológica",
         "infra_desc": "* **Orchestración:** LangGraph (Stateful Dataflow)\n* **Inferencia:** Groq API (Ultra-low latency)\n* **Interfaz:** Streamlit Enterprise Layout",
         "choose_pdf": "Elegir un PDF",
@@ -223,15 +223,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- CAPTURE DU PARAMÈTRE DE TRADUCTION DE L'URL ---
+# --- CAPTURE ET RÉINITIALISATION DE LA SESSION AU CHANGEMENT DE LANGUE ---
 query_params = st.query_params
 if "set_lang" in query_params:
     requested_lang = query_params["set_lang"]
     if requested_lang in ["FR", "EN", "ES"] and requested_lang != st.session_state["lang"]:
         st.session_state["lang"] = requested_lang
+        # Force le nettoyage de l'ancien rapport mis en cache pour éviter les conflits cross-langues
+        if "active_label" in st.session_state:
+            del st.session_state["active_label"]
         st.rerun()
 
-# Rendu HTML pur de l'en-tête unifiée (Titre à gauche, Boutons EN CERCLES à droite avec "EN" au lieu de "GB")
+# Rendu HTML pur de l'en-tête unifiée
 active_fr = "active" if st.session_state["lang"] == "FR" else ""
 active_en = "active" if st.session_state["lang"] == "EN" else ""
 active_es = "active" if st.session_state["lang"] == "ES" else ""
@@ -290,11 +293,16 @@ def run_analysis(pdf_path: str):
 
         thread_result = {}
         
-        # ICI : Forçage de la langue cible envoyée à l'IA selon la sélection active de l'utilisateur
+        # MAPPING EXPLICITE DU CODE ET NOM DE LA LANGUE POUR LE SYSTEM PROMPT DU LLM
+        lang_full_names = {"FR": "French", "EN": "English", "ES": "Spanish"}
+        chosen_lang_name = lang_full_names.get(st.session_state["lang"], "French")
+        
+        # Injection stricte des consignes linguistiques dans l'état de flux envoyé à LangGraph
         input_state: AgentState = {
             "pdf_path": pdf_path, 
             "language": st.session_state["lang"],
-            "target_language": st.session_state["lang"]
+            "target_language": st.session_state["lang"],
+            "system_instruction": f"CRITICAL: You must generate the final financial analysis report and summary entirely in {chosen_lang_name} language. Ignore the native language of the source PDF document."
         }
 
         def worker():
@@ -564,6 +572,7 @@ for col, (label, path) in zip(cols, example_reports.items()):
 
 result = None
 
+# Déclenchement automatique d'analyse
 if selected_example_label is not None and selected_example is not None:
     if not os.path.exists(selected_example):
         if st.session_state["lang"] == "EN": st.error(f"File '{selected_example_label}' not found.")
@@ -580,6 +589,7 @@ elif uploaded_file and st.button(t["btn_analysis"]):
     result = run_analysis(tmp_path)
     if os.path.exists(tmp_path): os.unlink(tmp_path)
 
+# Affichage dynamique du résultat généré dans la bonne langue
 if result is not None:
     active_report = st.session_state.get("active_label")
     st.markdown("---")
