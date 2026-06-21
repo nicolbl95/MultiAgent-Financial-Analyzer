@@ -112,13 +112,13 @@ TRADUCTIONS = {
         "agent2_desc": "* **Rol:** Evalúa la salud financiera, calcula indicadores clave de rendimiento (EBITDA, márgenes) e identifica factores de riesgo macro/microeconómicos.\n* **Lógica:** Cruza los datos extraídos con modelos de riesgo financiero preestablecidos.",
         "agent3_title": "✍️ 3. Agente Redactor",
         "agent3_tech": "**Tecnologías:** `LangGraph` | `Groq Cloud` | `Llama 3`",
-        "agent3_desc": "* **Rol:** Sintetiza los hallazgos brutos del analista en un informe estructurado para el Consejo de Administración.\n* **Visualización:** Genera etiquetas de gráficos dinámicos (`Plotly`) e inyecta la estructura visual final.",
+        "agent3_desc": "* **Rol:** Sintetiza los hallazgos brutos del analista en un informeิ estructurado para el Consejo de Administración.\n* **Visualización:** Genera etiquetas de gráficos dinámicos (`Plotly`) e inyecta la estructura visual final.",
         "infra_title": "💻 Infraestructura Tecnológica",
-        "infra_desc": "* **Orquestación:** LangGraph (Stateful Dataflow)\n* **Inferencia:** Groq API (Ultra-low latency)\n* **Interfaz:** Streamlit Enterprise Layout",
+        "infra_desc": "* **Orchestración:** LangGraph (Stateful Dataflow)\n* **Inferencia:** Groq API (Ultra-low latency)\n* **Interfaz:** Streamlit Enterprise Layout",
         "choose_pdf": "Elegir un PDF",
         "example_pdf": "O seleccione un informe PDF de muestra para iniciar el análisis de inmediato 🔽",
         "status_processing": "Procesando el documento por agentes de IA...",
-        "step1": "🕵️‍♂️ Paso 1: El Agente Extractor escanea e indexa el documento...",
+        "step1": "🕵️‍♂️ Paso 1: El Agente Extractor escanea e indexa le documento...",
         "step2": "🧠 Paso 2: El Agente Analista evalúa los riesgos financieros...",
         "step3": "✍️ Paso 3: El Agente Redactor finaliza el resumen...",
         "timer_estimated": "Tiempo estimado de carga: 22 segundos",
@@ -131,14 +131,14 @@ TRADUCTIONS = {
         "risk_title": "🕵️‍♂️ Informe de Análisis de Riesgo Específico",
         "chart_complementary": "📊 *Elementos visuales adicionales requeridos por el protocolo financiero :*",
         "chart_title_extract": "📊 Indicadores Clave Extraídos del Informe",
-        "chart_title_struct": "🏛️ Estructura Global Simplifiée",
+        "chart_title_struct": "🏛️ Estructura Global Simplificada",
         "btn_analysis": "Ejecutar Análisis IA"
     }
 }
 
 t = TRADUCTIONS[st.session_state["lang"]]
 
-# --- INJECTION CSS COMPLET CIBLÉ ET COMPATIBLE ---
+# --- CONFIGURATION STABLE ET STRIP DU CSS CIBLÉ ---
 st.markdown(
     """
     <style>
@@ -160,102 +160,91 @@ st.markdown(
         animation: spin 0.8s linear infinite;
         display: inline-block;
     }
-    .delay-text-1 {
-        color: #FFD700;
-        font-weight: normal;
-        animation: fadeIn 0.5s ease-in-out;
-    }
-    .delay-text-2 {
-        color: #FF5252;
-        font-weight: normal;
-        animation: fadeIn 0.5s ease-in-out;
-    }
     
-    /* Conteneur global pour maintenir les icônes alignés horizontalement */
-    .lang-container-box {
+    /* Conteneur pour verrouiller la position fixe des boutons de langue */
+    .lang-fixed-container {
         display: flex;
         justify-content: flex-end;
-        gap: 15px;
         align-items: center;
+        gap: 10px;
         width: 100%;
-        margin-bottom: -10px;
+        height: 100%;
     }
 
-    /* Ciblage STRICT des boutons se trouvant UNIQUEMENT dans notre boîte de langues */
-    .lang-container-box div[data-testid="stButton"] button {
+    /* Ciblage STRICT des 3 boutons de langues pour éviter les déformations globales */
+    .lang-fixed-container div[data-testid="stButton"] button {
         border-radius: 50% !important;
-        width: 65px !important;
-        height: 65px !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
         padding: 0 !important;
-        font-size: 14px !important;
-        font-weight: bold !important;
-        display: flex !important;
-        flex-direction: column !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        font-family: 'Inter', sans-serif !important;
+        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border: 2px solid rgba(255,255,255,0.1) !important;
+        border: 2px solid rgba(255,255,255,0.15) !important;
         background-color: #1E222A !important;
-        color: #FFFFFF !important;
-        transition: all 0.25s ease-in-out;
-        line-height: 1.2 !important;
-    }
-
-    /* Permet d'ajuster l'alignement de l'émoji drapeau et du texte à l'intérieur */
-    .lang-container-box div[data-testid="stButton"] button p {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 0;
+        color: #B0B3B8 !important;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
     }
     
-    /* État actif : Entouré de vert fluo avec ombre portée */
-    .lang-container-box .active-lang-btn div[data-testid="stButton"] button {
-        border: 3px solid #00E676 !important;
-        box-shadow: 0 0 12px rgba(0, 230, 118, 0.5) !important;
-        transform: scale(1.05);
+    /* Fixer le comportement interne des boutons de langue */
+    .lang-fixed-container div[data-testid="stButton"] button p {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Bordure VERTE active pour l'élément sélectionné */
+    .lang-fixed-container .active-lang-wrapper div[data-testid="stButton"] button {
+        border: 2.5px solid #00E676 !important;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.35) !important;
+        color: #FFFFFF !important;
     }
     
     @keyframes spin {
         to { transform: rotate(360deg); }
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- RENDU DES 3 BOUTONS DE LANGUE TOUT EN HAUT À DROITE SUR UNE MÊME LIGNE ---
-top_col1, top_col2 = st.columns([7.5, 2.5])
+# --- TITRE PRINCIPAL ET BOUTONS DE LANGUES ALIGNÉS HORIZONTALEMENT ---
+# Répartition de la ligne : Titre à gauche, boutons alignés à sa suite immédiate à droite
+header_col1, header_col2 = st.columns([7.8, 2.2])
 
-with top_col2:
-    # Utilisation d'un conteneur HTML Flexbox pour forcer l'alignement sur une seule ligne
-    st.markdown('<div class="lang-container-box">', unsafe_allow_html=True)
+with header_col1:
+    st.markdown(f"<h1 style='margin: 0; padding: 0;'>{t['title']}</h1>", unsafe_allow_html=True)
+
+with header_col2:
+    # Conteneur flexbox fixe maintenant l'alignement
+    st.markdown('<div class="lang-fixed-container">', unsafe_allow_html=True)
     
-    # Bouton Français
+    # Bouton FR
     if st.session_state["lang"] == "FR":
-        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
-    if st.button("🇫🇷\nFR", key="btn_fr"):
+        st.markdown('<div class="active-lang-wrapper">', unsafe_allow_html=True)
+    if st.button("FR", key="lang_btn_fr"):
         st.session_state["lang"] = "FR"
         st.rerun()
     if st.session_state["lang"] == "FR":
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Bouton Anglais
+    # Bouton GB
     if st.session_state["lang"] == "EN":
-        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
-    if st.button("🇬🇧\nGB", key="btn_en"):
+        st.markdown('<div class="active-lang-wrapper">', unsafe_allow_html=True)
+    if st.button("GB", key="lang_btn_en"):
         st.session_state["lang"] = "EN"
         st.rerun()
     if st.session_state["lang"] == "EN":
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Bouton Espagnol
+    # Bouton ES
     if st.session_state["lang"] == "ES":
-        st.markdown('<div class="active-lang-btn">', unsafe_allow_html=True)
-    if st.button("🇪🇸\nES", key="btn_es"):
+        st.markdown('<div class="active-lang-wrapper">', unsafe_allow_html=True)
+    if st.button("ES", key="lang_btn_es"):
         st.session_state["lang"] = "ES"
         st.rerun()
     if st.session_state["lang"] == "ES":
@@ -263,11 +252,10 @@ with top_col2:
         
     st.markdown('</div>', unsafe_allow_html=True)
 
-
-st.title(t["title"])
+# Sous-titre officiel placé juste en-dessous de l'ensemble titre-langues
 st.write(t["subtitle"])
 
-# --- BARRE LATÉRALE ENRICHIE ---
+# --- BARRE LATÉRALE ---
 with st.sidebar:
     st.header(t["sidebar_title"])
     st.markdown(t["sidebar_subtitle"])
@@ -361,7 +349,7 @@ def run_analysis(pdf_path: str):
 
     return result
 
-# Configuration des couleurs et du thème Premium Fintech
+# Configuration thématique Fintech Premium
 THEME_COLORS = {
     "primary": "#00E5FF",      
     "secondary": "#7C4DFF",    
