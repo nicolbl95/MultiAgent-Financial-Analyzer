@@ -41,12 +41,26 @@ def get_writer_llm():
 
 
 def write_summary(state):
+    # 1. Récupération sécurisée du texte de l'analyse et de la langue d'état (FR par défaut)
     if isinstance(state, dict):
         analysis = state.get("analysis", "")
+        lang = state.get("language", "FR")
     else:
         analysis = state.analysis
+        lang = getattr(state, "language", "FR")
 
-    prompt = f"""Tu es un expert en communication financière auprès de comités de direction.
+    # 2. Cartographie de la langue cible pour donner une instruction explicite au LLM
+    lang_mapping = {
+        "FR": "français (French)",
+        "EN": "anglais (English)",
+        "ES": "espagnol (Spanish)"
+    }
+    target_language_name = lang_mapping.get(lang, "français (French)")
+
+    # 3. PROMPT MODIFIÉ : Instruction impérative sur la langue dès le début
+    prompt = f"""You are a world-class financial communication expert.
+CRITICAL LANGUAGE DIRECTIVE: You must write the entire output, response, headers, and executive summary exclusively in {target_language_name}. Do NOT use any other language.
+
 À partir de l'analyse détaillée des risques ci-dessous, rédige une synthèse exécutive (Summary) claire, concise et percutante.
 Structure ta réponse sous forme de paragraphes fluides (pas de style haché ligne par ligne).
 
@@ -68,10 +82,13 @@ Analyse détaillée :
         except Exception:
             summary_genere = None
 
+    # 4. Message de secours traduit dynamiquement selon la langue de l'utilisateur
     if not summary_genere:
-        summary_genere = (
-            "### Synthèse Exécutive de Secours\n\n"
-            "L'analyse met en évidence les points clés extraits dans le rapport d'analyse des risques."
-        )
+        if lang == "EN":
+            summary_genere = "### Executive Summary Backup\n\nThe analysis highlights key points extracted from the risk assessment report."
+        elif lang == "ES":
+            summary_genere = "### Resumen Ejecutivo de Reserva\n\nEl análisis destaca los puntos clave extraídos en el informe de análisis de riesgos."
+        else:
+            summary_genere = "### Synthèse Exécutive de Secours\n\nL'analyse met en évidence les points clés extraits dans le rapport d'analyse des risques."
 
     return {"summary": summary_genere}
