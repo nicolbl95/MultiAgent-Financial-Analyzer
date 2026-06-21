@@ -72,10 +72,52 @@ st.title("Assistant IA — Analyse Financière Multi-Agents")
 st.write("Déposez un rapport financier PDF de moins de 20 pages. 3 agents IA l'analysent en séquence.")
 
 with st.sidebar:
-    st.header("Architecture du système")
-    st.write("1. Agent Extracteur (ChromaDB + RAG)")
-    st.write("2. Agent Analyste (ChromaDB + Query)")
-    st.write("3. Agent Rédacteur (LangGraph + Groq)")
+    st.header("⚙️ Architecture du Système")
+    st.markdown("Structure séquentielle orchestrée par un graphe d'agents intelligents.")
+    st.markdown("---")
+    
+    # Étape 1
+    st.subheader("🕵️‍♂️ 1. Agent Extracteur")
+    st.caption("**Technologies :** `PyPDF` | `ChromaDB` | `RAG`")
+    st.markdown(
+        """
+        * **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.
+        * **Mémoire :** Vectorise et stocke temporairement les segments clés pour permettre des recherches documentaires ciblées.
+        """
+    )
+    st.markdown("---")
+    
+    # Étape 2
+    st.subheader("🧠 2. Agent Analyste")
+    st.caption("**Technologies :** `LangChain` | `Vector Query` | `ChromaDB`")
+    st.markdown(
+        """
+        * **Rôle :** Évalue la santé financière, calcule les indicateurs clés de performance (EBITDA, marges) et identifie les facteurs de risques macro/micro-économiques.
+        * **Logique :** Croise les données extraites avec des modèles de risques financiers préétablis.
+        """
+    )
+    st.markdown("---")
+    
+    # Étape 3
+    st.subheader("✍️ 3. Agent Rédacteur")
+    st.caption("**Technologies :** `LangGraph` | `Groq Cloud` | `Llama 3`")
+    st.markdown(
+        """
+        * **Rôle :** Synthétise les conclusions brutes de l'analyste sous la forme d'un rapport structuré pour le Comité de Direction.
+        * **Rendu :** Génère les balises de graphiques dynamiques (`Plotly`) et injecte la structure visuelle finale.
+        """
+    )
+    st.markdown("---")
+    
+    # Spécifications de l'infrastructure
+    st.subheader("💻 Infrastructure Tech")
+    st.markdown(
+        """
+        * **Orchestration :** LangGraph (Stateful Dataflow)
+        * **Inférence :** Groq API (Ultra-low latency)
+        * **Interface :** Streamlit Enterprise Layout
+        """
+    )
 
 def run_analysis(pdf_path: str):
     with st.status("Traitement du document par les agents IA...", expanded=True) as status:
