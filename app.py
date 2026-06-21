@@ -69,7 +69,7 @@ st.markdown(
 )
 
 st.title("Assistant IA — Analyse Financière Multi-Agents")
-st.write("Déposez un rapport financier PDF (de moins de 30 pages). 3 agents IA l'analysent en séquence.")
+st.write("Déposez un rapport financier PDF de moins de 30 pages. 3 agents IA l'analysent en séquence.")
 
 with st.sidebar:
     st.header("Architecture du système")
