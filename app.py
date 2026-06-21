@@ -36,7 +36,7 @@ TRADUCTIONS = {
         "sidebar_subtitle": "Structure séquentielle orchestrée par un graphe d'agents internes.",
         "agent1_title": "🕵️‍♂️ 1. Agent Extracteur",
         "agent1_tech": "**Technologies :** `PyPDF` | `ChromaDB` | `RAG`",
-        "agent1_desc": "* **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.\n* **Mémoire :** Vectorise et stocke temporairement les segments clés pour permettre des recherches documentaires ciblées.",
+        "agent1_desc": "* **Rôle :** Analyse la structure du PDF, segmente le texte et extrait les tables de données numériques.\n* **Mémoire :** Vectorise et store temporairement les segments clés pour permettre des recherches documentaires ciblées.",
         "agent2_title": "🧠 2. Agent Analyste",
         "agent2_tech": "**Technologies :** `LangChain` | `Vector Query` | `ChromaDB`",
         "agent2_desc": "* **Rôle :** Évalue la santé financière, calcule les indicateurs clés de performance (EBITDA, marges) et identifie les facteurs de risques macro/micro-économiques.\n* **Logique :** Croise les données extraites avec des modèles de risques financiers préétablis.",
@@ -131,7 +131,7 @@ TRADUCTIONS = {
         "risk_title": "🕵️‍♂️ Informe de Análisis de Riesgo Específico",
         "chart_complementary": "📊 *Elementos visuales adicionales requeridos por el protocolo financiero :*",
         "chart_title_extract": "📊 Indicadores Clave Extraídos del Informe",
-        "chart_title_struct": "🏛️ Estructura Global Simplificada",
+        "chart_title_struct": "🏛️ Estructura Global Simplifiée",
         "btn_analysis": "Ejecutar Análisis IA"
     }
 }
@@ -152,7 +152,6 @@ st.markdown(
         padding-bottom: 10px !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
-    
     .header-lock-row h1 {
         margin: 0 !important;
         padding: 0 !important;
@@ -160,14 +159,12 @@ st.markdown(
         font-weight: 700 !important;
         color: #FFFFFF !important;
     }
-
     .lang-container-row {
         display: flex !important;
         flex-direction: row !important;
         gap: 12px !important;
         align-items: center !important;
     }
-
     .lang-circle-btn {
         width: 44px !important;
         height: 44px !important;
@@ -184,19 +181,16 @@ st.markdown(
         cursor: pointer !important;
         transition: all 0.2s ease-in-out !important;
     }
-
     .lang-circle-btn:hover {
         border-color: rgba(255, 255, 255, 0.4) !important;
         color: #FFFFFF !important;
     }
-
     .lang-circle-btn.active {
         border: 2.5px solid #00E676 !important;
         box-shadow: 0 0 12px rgba(0, 230, 118, 0.4) !important;
         color: #FFFFFF !important;
         background-color: #14171C !important;
     }
-    
     .loading-container {
         display: flex;
         align-items: center;
@@ -229,12 +223,11 @@ if "set_lang" in query_params:
     requested_lang = query_params["set_lang"]
     if requested_lang in ["FR", "EN", "ES"] and requested_lang != st.session_state["lang"]:
         st.session_state["lang"] = requested_lang
-        # Force le nettoyage de l'ancien rapport mis en cache pour éviter les conflits cross-langues
-        if "active_label" in st.session_state:
-            del st.session_state["active_label"]
+        # Supprime le résultat précédent pour forcer la régénération immédiate dans la nouvelle langue
+        if "last_analysis_result" in st.session_state:
+            del st.session_state["last_analysis_result"]
         st.rerun()
 
-# Rendu HTML pur de l'en-tête unifiée
 active_fr = "active" if st.session_state["lang"] == "FR" else ""
 active_en = "active" if st.session_state["lang"] == "EN" else ""
 active_es = "active" if st.session_state["lang"] == "ES" else ""
@@ -260,28 +253,23 @@ with st.sidebar:
     st.header(t["sidebar_title"])
     st.markdown(t["sidebar_subtitle"])
     st.markdown("---")
-    
     st.subheader(t["agent1_title"])
     st.caption(t["agent1_tech"])
     st.markdown(t["agent1_desc"])
     st.markdown("---")
-    
     st.subheader(t["agent2_title"])
     st.caption(t["agent2_tech"])
     st.markdown(t["agent2_desc"])
     st.markdown("---")
-    
     st.subheader(t["agent3_title"])
     st.caption(t["agent3_tech"])
     st.markdown(t["agent3_desc"])
     st.markdown("---")
-    
     st.subheader(t["infra_title"])
     st.markdown(t["infra_desc"])
 
 def run_analysis(pdf_path: str):
     with st.status(t["status_processing"], expanded=True) as status:
-        
         timer_placeholder = st.empty()
         step1_placeholder = st.empty()
         step2_placeholder = st.empty()
@@ -292,17 +280,17 @@ def run_analysis(pdf_path: str):
         step3_placeholder.write(t["step3"])
 
         thread_result = {}
-        
-        # MAPPING EXPLICITE DU CODE ET NOM DE LA LANGUE POUR LE SYSTEM PROMPT DU LLM
         lang_full_names = {"FR": "French", "EN": "English", "ES": "Spanish"}
         chosen_lang_name = lang_full_names.get(st.session_state["lang"], "French")
         
-        # Injection stricte des consignes linguistiques dans l'état de flux envoyé à LangGraph
+        # Injection robuste de variables et forçage de l'instruction dans l'état transmis au graphe
         input_state: AgentState = {
             "pdf_path": pdf_path, 
             "language": st.session_state["lang"],
             "target_language": st.session_state["lang"],
-            "system_instruction": f"CRITICAL: You must generate the final financial analysis report and summary entirely in {chosen_lang_name} language. Ignore the native language of the source PDF document."
+            "current_language": st.session_state["lang"],
+            "system_instruction": f"CRITICAL REQUIREMENT: You must absolutely write the final report, analysis, and executive summary entirely in the {chosen_lang_name} language. Do not output any French text if English or Spanish is selected.",
+            "instructions": f"Translate all insights and findings. The output language MUST be {chosen_lang_name}."
         }
 
         def worker():
@@ -317,16 +305,12 @@ def run_analysis(pdf_path: str):
 
         while analysis_thread.is_alive():
             elapsed_time = time.time() - start_time
-            
             message_html = f'<div class="loading-container">⏳ {t["timer_estimated"]} ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
-            
             if elapsed_time >= 40:
                 message_html += f' <span class="delay-text-1">{t["delay1"]}</span> <span class="delay-text-2">{t["delay2"]}</span>'
             elif elapsed_time >= 22:
                 message_html += f' <span class="delay-text-1">{t["delay1"]}</span>'
-                
             message_html += '</div>'
-            
             timer_placeholder.markdown(message_html, unsafe_allow_html=True)
             time.sleep(0.2)
 
@@ -351,47 +335,24 @@ def run_analysis(pdf_path: str):
             f'<div class="loading-container">✅ {completed_text} {int(total_duration)} {seconds_text}</div>', 
             unsafe_allow_html=True
         )
-        
         status.update(label=t["done"], state="complete", expanded=False)
 
+    if result:
+        st.session_state["last_analysis_result"] = result
     return result
 
-# Configuration thématique Fintech Premium
+# --- GESTION FINTECH PREMIUM POUR PLOTLY ---
 THEME_COLORS = {
-    "primary": "#00E5FF",      
-    "secondary": "#7C4DFF",    
-    "success": "#00E676",      
-    "warning": "#FFD700",      
-    "danger": "#FF5252",       
-    "grid_color": "rgba(255, 255, 255, 0.05)" 
+    "primary": "#00E5FF", "secondary": "#7C4DFF", "success": "#00E676", "warning": "#FFD700", "danger": "#FF5252", "grid_color": "rgba(255, 255, 255, 0.05)"
 }
 
 def apply_premium_layout(fig, title_text):
     fig.update_layout(
-        title=dict(
-            text=title_text,
-            font=dict(family="Inter, sans-serif", size=15, color="#FFFFFF"),
-            x=0,
-            y=0.95
-        ),
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)", 
-        plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=40, r=20, t=60, b=40),
-        font=dict(family="Inter, sans-serif", color="#B0B3B8"),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="left",
-            x=0,
-            font=dict(size=11)
-        ),
-        hoverlabel=dict(
-            bgcolor="#1E222A",
-            font_size=12,
-            font_family="Inter, sans-serif"
-        )
+        title=dict(text=title_text, font=dict(family="Inter, sans-serif", size=15, color="#FFFFFF"), x=0, y=0.95),
+        template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=40, r=20, t=60, b=40), font=dict(family="Inter, sans-serif", color="#B0B3B8"),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="left", x=0, font=dict(size=11)),
+        hoverlabel=dict(bgcolor="#1E222A", font_size=12, font_family="Inter, sans-serif")
     )
     fig.update_xaxes(showgrid=False, linecolor="rgba(255,255,255,0.1)", zeroline=False)
     fig.update_yaxes(showgrid=True, gridcolor=THEME_COLORS["grid_color"], zeroline=False, linecolor="rgba(255,255,255,0.1)")
@@ -403,21 +364,14 @@ def display_requested_chart(chart_type, report_label, key):
             if st.session_state["lang"] == "EN": x_labels = ['Debt / Equity', 'Operating Margin', 'Yield']
             elif st.session_state["lang"] == "ES": x_labels = ['Deuda / Capital', 'Margen Operativo', 'Rendimiento']
             else: x_labels = ['Dette / Équité', 'Marge Opérationnelle', 'Rendement']
-            
-            fig.add_trace(go.Bar(
-                x=x_labels, y=[42.5, 14.8, 8.2], 
-                marker=dict(color=THEME_COLORS["primary"], cornerradius=6),
-                text=['42.5%', '14.8%', '8.2%'], textposition='auto'
-            ))
+            fig.add_trace(go.Bar(x=x_labels, y=[42.5, 14.8, 8.2], marker=dict(color=THEME_COLORS["primary"], cornerradius=6), text=['42.5%', '14.8%', '8.2%'], textposition='auto'))
             apply_premium_layout(fig, t["chart_title_extract"])
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
         else:
             if st.session_state["lang"] == "EN": names_labels = ['Current Assets', 'Fixed Assets']
             elif st.session_state["lang"] == "ES": names_labels = ['Activos Corrientes', 'Activos Fijos']
             else: names_labels = ['Activos Courants', 'Immobilisations']
-            
-            fig = px.pie(values=[65, 35], names=names_labels, hole=0.55,
-                         color_discrete_sequence=[THEME_COLORS["success"], THEME_COLORS["secondary"]])
+            fig = px.pie(values=[65, 35], names=names_labels, hole=0.55, color_discrete_sequence=[THEME_COLORS["success"], THEME_COLORS["secondary"]])
             apply_premium_layout(fig, t["chart_title_struct"])
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
@@ -426,35 +380,22 @@ def display_requested_chart(chart_type, report_label, key):
     if chart_type == "STYLE_BARRES":
         fig = go.Figure()
         if report_label == "OmniDrive":
-            fig.add_trace(go.Bar(
-                x=['2024', '2025'], y=[48.12, 62.45], 
-                text=['48.12 M€', '62.45 M€'], textposition='auto', 
-                marker=dict(color=THEME_COLORS["primary"], cornerradius=8)
-            ))
+            fig.add_trace(go.Bar(x=['2024', '2025'], y=[48.12, 62.45], text=['48.12 M€', '62.45 M€'], textposition='auto', marker=dict(color=THEME_COLORS["primary"], cornerradius=8)))
             title = "📈 Revenue Trajectory" if st.session_state["lang"] == "EN" else ("📈 Trayectoria de Ingresos" if st.session_state["lang"] == "ES" else "📈 Trajectoire & Croissance du Chiffre d'Affaires")
         elif report_label == "TechNova":
             if st.session_state["lang"] == "EN": categories = ['Gross Margin', 'R&D Investments', 'EBITDA']
             elif st.session_state["lang"] == "ES": categories = ['Margen Bruto', 'Inversiones I+D', 'EBITDA']
             else: categories = ['Marge Brute', 'R&D Investissements', 'EBITDA']
             values = [32.14, 18.5, 12.91]
-            fig.add_trace(go.Bar(
-                x=categories, y=values, 
-                marker=dict(color=[THEME_COLORS["primary"], THEME_COLORS["secondary"], THEME_COLORS["success"]], cornerradius=6),
-                text=[f"{v} M€" for v in values], textposition='auto'
-            ))
+            fig.add_trace(go.Bar(x=categories, y=values, marker=dict(color=[THEME_COLORS["primary"], THEME_COLORS["secondary"], THEME_COLORS["success"]], cornerradius=6), text=[f"{v} M€" for v in values], textposition='auto'))
             title = "⚡ Operational Indicators" if st.session_state["lang"] == "EN" else ("⚡ Indicadores Operativos" if st.session_state["lang"] == "ES" else "⚡ Indicateurs de Performance Opérationnelle")
         elif report_label == "BioSensus 2025":
             if st.session_state["lang"] == "EN": categories = ['Gross Margin', 'Adjusted EBITDA', 'Operating Income (EBIT)']
             elif st.session_state["lang"] == "ES": categories = ['Margen Bruto', 'EBITDA Ajustado', 'Resultado Operativo (EBIT)']
             else: categories = ['Marge Brute', 'EBITDA Ajusté', 'Résultat Opérationnel (EBIT)']
             values = [32.02, 14.15, 8.92]
-            fig.add_trace(go.Bar(
-                x=categories, y=values, 
-                marker=dict(color=[THEME_COLORS["success"], THEME_COLORS["warning"], THEME_COLORS["primary"]], cornerradius=6),
-                text=[f"{v} M€" for v in values], textposition='auto'
-            ))
+            fig.add_trace(go.Bar(x=categories, y=values, marker=dict(color=[THEME_COLORS["success"], THEME_COLORS["warning"], THEME_COLORS["primary"]], cornerradius=6), text=[f"{v} M€" for v in values], textposition='auto'))
             title = "📊 Financial Margins" if st.session_state["lang"] == "EN" else ("📊 Márgenes Financieros" if st.session_state["lang"] == "ES" else "📊 Soldes Intermédiaires de Gestion & Marges")
-        
         apply_premium_layout(fig, title)
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
@@ -464,11 +405,7 @@ def display_requested_chart(chart_type, report_label, key):
             if st.session_state["lang"] == "EN": x_axis = ['2024', '2025', '2026 Forecast']
             elif st.session_state["lang"] == "ES": x_axis = ['2024', '2025', 'Previsión 2026']
             else: x_axis = ['2024', '2025', 'Prévisions 2026']
-            fig.add_trace(go.Scatter(
-                x=x_axis, y=[59.3, 84.15, 120.0], 
-                mode='lines+markers', line=dict(color=THEME_COLORS["warning"], width=4, shape="spline"),
-                marker=dict(size=8, color="#FFFFFF", line=dict(color=THEME_COLORS["warning"], width=2))
-            ))
+            fig.add_trace(go.Scatter(x=x_axis, y=[59.3, 84.15, 120.0], mode='lines+markers', line=dict(color=THEME_COLORS["warning"], width=4, shape="spline"), marker=dict(size=8, color="#FFFFFF", line=dict(color=THEME_COLORS["warning"], width=2))))
             title = "📉 Growth Trajectory" if st.session_state["lang"] == "EN" else ("📉 Trayectoria de Crecimiento" if st.session_state["lang"] == "ES" else "📉 Trajectoire Spécifique de Croissance Pluriannuelle")
             apply_premium_layout(fig, title)
         else:
@@ -486,27 +423,22 @@ def display_requested_chart(chart_type, report_label, key):
                 values = [31.2, 22.5]
                 colors = [THEME_COLORS["success"], THEME_COLORS["danger"]]
                 title = "🏛️ Funding Structure" if st.session_state["lang"] == "EN" else ("🏛️ Estructura de Financiación" if st.session_state["lang"] == "ES" else "🏛️ Équilibre du Financement")
-
             fig = px.pie(values=values, names=labels, hole=0.55, color_discrete_sequence=colors)
             fig.update_traces(textposition='outside', textinfo='percent+label')
             apply_premium_layout(fig, title)
             fig.update_layout(showlegend=False)
-            
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
 def render_dynamic_content_with_strict_two_charts(analysis_text, summary_text, report_label):
     full_text = f"{analysis_text}\n---SECTION_BREAK---\n{summary_text}"
     lines = full_text.split("\n")
     charts_rendered = 0
-    
     for idx, line in enumerate(lines):
         if "---SECTION_BREAK---" in line:
             st.markdown("---")
             st.subheader(t["section_break"])
             continue
-            
         is_tag = any(tag in line for tag in ["[GRAPH_EVOLUTION]", "[GRAPH_REPARTITION]", "[GRAPH_PERFORMANCE]"])
-        
         if is_tag:
             chart_key = f"dynamic_chart_strict_{idx}"
             if charts_rendered == 0:
@@ -529,7 +461,6 @@ def render_dynamic_content_with_strict_two_charts(analysis_text, summary_text, r
             with c2: display_requested_chart("STYLE_DONUT_OU_LIGNE", report_label, "force_chart_2")
         elif charts_rendered == 1:
             display_requested_chart("STYLE_DONUT_OU_LIGNE", report_label, "force_chart_2")
-
 
 uploaded_file = st.file_uploader(t["choose_pdf"], type="pdf")
 st.write(t["example_pdf"])
@@ -570,30 +501,28 @@ for col, (label, path) in zip(cols, example_reports.items()):
             else:
                 st.caption("❌")
 
-result = None
-
-# Déclenchement automatique d'analyse
+# Lancement de l'analyse ou récupération depuis la session
 if selected_example_label is not None and selected_example is not None:
     if not os.path.exists(selected_example):
         if st.session_state["lang"] == "EN": st.error(f"File '{selected_example_label}' not found.")
         elif st.session_state["lang"] == "ES": st.error(f"Archivo '{selected_example_label}' no encontrado.")
         else: st.error(f"Fichier d'exemple introuvable pour '{selected_example_label}'.")
     else:
-        result = run_analysis(selected_example)
+        run_analysis(selected_example)
 
 elif uploaded_file and st.button(t["btn_analysis"]):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
     st.session_state["active_label"] = "Custom Upload"
-    result = run_analysis(tmp_path)
+    run_analysis(tmp_path)
     if os.path.exists(tmp_path): os.unlink(tmp_path)
 
-# Affichage dynamique du résultat généré dans la bonne langue
-if result is not None:
-    active_report = st.session_state.get("active_label")
+# Rendu persistant basé sur l'état de session sécurisé
+if "last_analysis_result" in st.session_state:
+    result = st.session_state["last_analysis_result"]
+    active_report = st.session_state.get("active_label", "Analyse")
     st.markdown("---")
-    
     render_dynamic_content_with_strict_two_charts(
         result.get("analysis", ""), 
         result.get("summary", ""), 
