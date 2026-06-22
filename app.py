@@ -467,7 +467,7 @@ for col, (label, path) in zip(cols, example_reports.items()):
 
 # --- EXECUTION / AUTO-RELANCE SI LE DOCUMENT EST DÉJÀ INITIALISÉ DANS UNE AUTRE LANGUE ---
 if "last_analysis_result" not in st.session_state and "last_analyzed_path" in st.session_state:
-    # Déclenchement automatique immédiat lors du changement de langue via l'en-tête
+# Déclenchement automatique immédiat lors du changement de langue via l'en-tête
     run_analysis(st.session_state["last_analyzed_path"])
 
 elif selected_example_label is not None and selected_example is not None:
@@ -479,7 +479,24 @@ elif selected_example_label is not None and selected_example is not None:
     else:
         run_analysis(selected_example)
 
-# 1. On recrée proprement la variable manquante pour enlever les vagues rouges
+# ==========================================
+# ETAPE 1 : ON MET LE RENDU DE L'ANALYSE ICI (Juste en dessous des boutons d'exemples)
+# ==========================================
+if "last_analysis_result" in st.session_state:
+    result = st.session_state["last_analysis_result"]
+    active_report = st.session_state.get("active_label", "Analyse")
+    st.markdown("---")
+    # Appel de la fonction pour le graphique unique et dynamique
+    render_dynamic_content_with_single_chart(
+        result.get("analysis", ""), 
+        result.get("summary", ""), 
+        active_report
+    )
+
+# ==========================================
+# ETAPE 2 : LE ZONE DE CHARGEMENT DE PDF TOUT EN BAS DE LA PAGE
+# ==========================================
+st.markdown("---") # Petite ligne de séparation visuelle pour faire propre
 uploaded_file = st.file_uploader(t["choose_pdf"], type="pdf")
 
 if uploaded_file and st.button(t["btn_analysis"]):
@@ -496,15 +513,6 @@ if uploaded_file and st.button(t["btn_analysis"]):
     
     if os.path.exists(tmp_path): 
         os.unlink(tmp_path)
-
-# Rendu persistant basé sur l'état de session sécurisé
-if "last_analysis_result" in st.session_state:
-    result = st.session_state["last_analysis_result"]
-    active_report = st.session_state.get("active_label", "Analyse")
-    st.markdown("---")
-    # Appel de la nouvelle fonction pour le graphique unique
-    render_dynamic_content_with_single_chart(
-        result.get("analysis", ""), 
-        result.get("summary", ""), 
-        active_report
-    ) 
+    
+    # Force Streamlit à recharger immédiatement pour afficher le nouveau rapport au bon endroit
+    st.rerun()
