@@ -34,21 +34,37 @@ def get_analyzer_llm():
 
 
 def analyze_risks(state):
-    # 1. Récupération sécurisée du texte brut et de la langue (FR par défaut)
+    # 1. Récupération sécurisée du texte brut et de la langue (avec vérification des clés alternatives)
     if isinstance(state, dict):
         raw_text = state.get("raw_text", "")
         lang = state.get("language", "FR")
+        if state.get("lang") == "EN" or state.get("target_language") == "EN":
+            lang = "EN"
     else:
         raw_text = state.raw_text
         lang = getattr(state, "language", "FR")
+        if getattr(state, "lang", "FR") == "EN" or getattr(state, "target_language", "FR") == "EN":
+            lang = "EN"
 
-    # 2. Cartographie de la langue cible pour forcer le LLM à s'adapter
-    lang_mapping = {
-        "FR": "français (French)",
-        "EN": "anglais (English)",
-        "ES": "espagnol (Spanish)"
-    }
-    target_language_name = lang_mapping.get(lang, "français (French)")
+    # 2. Cartographie stricte de la langue cible
+    if lang == "EN":
+        target_language_name = "English"
+        instruction_text = (
+            "Based on the extracted data from the document, write a detailed financial and strategic risk analysis of the company.\n"
+            "Structure your response with fluent, fully drafted, and professional paragraphs."
+        )
+    elif lang == "ES":
+        target_language_name = "Spanish"
+        instruction_text = (
+            "A partir de los datos extraídos del documento, redacte un análisis detallado de los riesgos financieros de la empresa.\n"
+            "Estructure su respuesta en párrafos fluidos, redactados y profesionales."
+        )
+    else:
+        target_language_name = "French"
+        instruction_text = (
+            "À partir des données extraites du document, rédige une analyse détaillée des risques financiers de l'entreprise.\n"
+            "Structure ta réponse avec des paragraphes fluides, rédigés et professionnels."
+        )
 
     client = chromadb.Client()
     collection = client.get_or_create_collection("financial_doc")
@@ -66,21 +82,14 @@ def analyze_risks(state):
     analyse_generee = None
 
     if llm is not None:
-        # 3. PROMPT MODIFIÉ : Ordre absolu de rédiger dans la langue cible dès le départ
+        # 3. PROMPT CORRIGÉ : Instructions 100% harmonisées dans la langue cible
+        # Suppression des anciennes consignes de balises parasites [GRAPH_EVOLUTION]
         prompt = f"""You are a senior financial analyst and risk management expert.
-CRITICAL LANGUAGE DIRECTIVE: You must write the entire output, response, headers, and professional analysis exclusively in {target_language_name}. Do NOT use any other language.
+CRITICAL LANGUAGE DIRECTIVE: You MUST write the entire output, response, headers, titles, and professional analysis exclusively in {target_language_name}. Do NOT use any other language than {target_language_name}.
 
-À partir des données extraites du document, rédige une analyse détaillée des risques financiers de l'entreprise.
-Structure ta réponse avec des paragraphes fluides, rédigés et professionnels.
+{instruction_text}
 
-CRITIQUE : Pour illustrer ton analyse, tu DOIS insérer de manière fluide exactement 1 ou 2 balises graphiques parmi les suivantes, au moment le plus opportun dans ton texte (juste après ou pendant que tu évoques des chiffres clés) :
-- Insère la balise [GRAPH_EVOLUTION] si tu parles de la trajectoire globale, de la croissance ou de l'historique de l'entreprise.
-- Insère la balise [GRAPH_REPARTITION] si tu parles de la structure du capital, de la répartition de la dette ou de la provenance des revenus.
-- Insère la balise [GRAPH_PERFORMANCE] si tu analyses la rentabilité, les marges, l'EBITDA ou les coûts opérationnels/R&D.
-
-Fais en sorte que ces balises soient écrites sur leur propre ligne entre deux paragraphes.
-
-Données du document :
+Document Data:
 {raw_text}"""
         try:
             response = llm.invoke(prompt)
