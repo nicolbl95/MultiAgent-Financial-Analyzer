@@ -482,4 +482,4 @@ if "last_analysis_result" in st.session_state:
         result.get("analysis", ""), 
         result.get("summary", ""), 
         active_report
-    )
+    ) 

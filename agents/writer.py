@@ -99,4 +99,4 @@ Analyse détaillée :
         else:
             summary_genere = "### Synthèse Exécutive de Secours\n\nL'analyse met en évidence les points clés extraits dans le rapport d'analyse des risques."
 
-    return {"summary": summary_genere}
+    return {"summary": summary_genere} 
