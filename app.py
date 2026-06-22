@@ -452,6 +452,7 @@ def resolve_sample_path(filename: str) -> str | None:
 example_reports = {label: resolve_sample_path(filename) for label, filename in sample_files.items()}
 
 cols = st.columns(len(example_reports))
+trigger_analysis_path = None  # Variable temporaire pour capter le clic et sortir des colonnes
 
 for col, (label, path) in zip(cols, example_reports.items()):
     with col:
@@ -472,9 +473,8 @@ for col, (label, path) in zip(cols, example_reports.items()):
                     st.session_state["active_label"] = label
                     st.session_state["last_analyzed_path"] = path
                     
-                    # 3. EXÉCUTION IMMÉDIATE : Lie l'analyse de manière stricte au clic sur ce bouton précis
-                    run_analysis(path)
-                    st.rerun()
+                    # 3. On arme le déclencheur pour exécuter l'analyse hors des colonnes
+                    trigger_analysis_path = path
                     
         with sub_col2:
             if path and os.path.exists(path):
@@ -483,8 +483,13 @@ for col, (label, path) in zip(cols, example_reports.items()):
             else:
                 st.caption("❌")
 
+# --- BLOC D'EXÉCUTION DES EXEMPLES (SORTI DES COLONNES POUR PRENDRE TOUTE LA LARGEUR HORIZONTALE) ---
+if trigger_analysis_path is not None:
+    run_analysis(trigger_analysis_path)
+    st.rerun()
+
 # --- EXECUTION POUR UPLOAD DE FICHIER PERSO ---
-if uploaded_file and st.button(t["btn_analysis"]):
+elif uploaded_file and st.button(t["btn_analysis"]):
     # CORRECTION SÉCURITÉ : On supprime l'ancien historique en cache si on uploade un nouveau fichier
     if "last_analysis_result" in st.session_state:
         del st.session_state["last_analysis_result"]
@@ -498,7 +503,7 @@ if uploaded_file and st.button(t["btn_analysis"]):
 
 # --- AUTO-RELANCE UNIQUEMENT LORS D'UN CHANGEMENT DE LANGUE VIA L'EN-TÊTE ---
 # Si le résultat a été effacé (changement de langue) mais qu'un fichier était en cours de consultation
-if "last_analysis_result" not in st.session_state and "last_analyzed_path" in st.session_state:
+elif "last_analysis_result" not in st.session_state and "last_analyzed_path" in st.session_state:
     run_analysis(st.session_state["last_analyzed_path"])
 
 # --- RENDU PERSISTANT BASÉ SUR L'ÉTAT DE SESSION SÉCURISÉ ---
