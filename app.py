@@ -384,6 +384,12 @@ def render_dynamic_content_with_single_chart(analysis_text, summary_text, report
             st.subheader(t["section_break"])
             continue
             
+        # --- BLOC DE SÉCURITÉ : NETTOYAGE DES ANCIENNES BALISES BRUTES ---
+        # Supprime définitivement [GRAPH_EVOLUTION], [GRAPH_REPARTITION], etc.
+        if "[GRAPH_" in line:
+            continue
+        # ----------------------------------------------------------------
+            
         # 1. On intercepte la nouvelle balise dynamique
         if "[DYNAMIC_GRAPH:" in line:
             if not chart_rendered:  # Sécurité pour n'en afficher qu'un seul maximum
@@ -453,6 +459,9 @@ for col, (label, path) in zip(cols, example_reports.items()):
         sub_col1, sub_col2 = st.columns([3, 1])
         with sub_col1:
             if st.button(label, use_container_width=True, key=f"btn_ex_{label}"):
+                # CORRECTION SÉCURITÉ : On vide le cache persistant de l'ancienne analyse
+                if "last_analysis_result" in st.session_state:
+                    del st.session_state["last_analysis_result"]
                 selected_example = path
                 selected_example_label = label
                 st.session_state["active_label"] = label
@@ -478,6 +487,9 @@ elif selected_example_label is not None and selected_example is not None:
         run_analysis(selected_example)
 
 elif uploaded_file and st.button(t["btn_analysis"]):
+    # CORRECTION SÉCURITÉ : On supprime l'ancien historique en cache si on uploade un nouveau fichier
+    if "last_analysis_result" in st.session_state:
+        del st.session_state["last_analysis_result"]
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
@@ -495,4 +507,4 @@ if "last_analysis_result" in st.session_state:
         result.get("analysis", ""), 
         result.get("summary", ""), 
         active_report
-    ) 
+    )
