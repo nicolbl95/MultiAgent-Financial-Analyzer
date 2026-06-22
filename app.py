@@ -238,10 +238,14 @@ def run_analysis(pdf_path: str):
         while analysis_thread.is_alive():
             elapsed_time = time.time() - start_time
             message_html = f'<div class="loading-container">⏳ {t["timer_estimated"]} ({int(elapsed_time)}s) <span class="custom-spinner"></span>'
+            
+            # --- BLOC MODIFIÉ AVEC LES COULEURS PREMIUM EN HTML/CSS ---
             if elapsed_time >= 40:
-                message_html += f' <span class="delay-text-1">{t["delay1"]}</span> <span class="delay-text-2">{t["delay2"]}</span>'
+                message_html += f' <span class="delay-text-1" style="color: #64B5F6; font-weight: bold; margin-left: 5px;">{t["delay1"]}</span> <span class="delay-text-2" style="color: #81C784; font-weight: bold; margin-left: 5px;">{t["delay2"]}</span>'
             elif elapsed_time >= 22:
-                message_html += f' <span class="delay-text-1">{t["delay1"]}</span>'
+                message_html += f' <span class="delay-text-1" style="color: #64B5F6; font-weight: bold; margin-left: 5px;">{t["delay1"]}</span>'
+            # ---------------------------------------------------------
+            
             message_html += '</div>'
             timer_placeholder.markdown(message_html, unsafe_allow_html=True)
             time.sleep(0.2)
@@ -275,7 +279,6 @@ def run_analysis(pdf_path: str):
 THEME_COLORS = {
     "primary": "#00E5FF", "secondary": "#7C4DFF", "success": "#00E676", "warning": "#FFD700", "danger": "#FF5252", "grid_color": "rgba(255, 255, 255, 0.05)"
 }
-
 def apply_premium_layout(fig, title_text):
     fig.update_layout(
         title=dict(text=title_text, font=dict(family="Inter, sans-serif", size=15, color="#FFFFFF"), x=0, y=0.95),
