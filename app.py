@@ -370,7 +370,8 @@ def display_requested_chart(chart_type, report_label, key):
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=key)
 
 def render_dynamic_content_with_single_chart(analysis_text, summary_text, report_label):
-    full_text = f"{analysis_text}\n---SECTION_BREAK---\n{summary_text}"
+    # CORRECTION OPTION B : On n'utilise plus summary_text pour éviter les doublons de rapport
+    full_text = analysis_text
     lines = full_text.split("\n")
     chart_rendered = False  # On passe à un simple indicateur Vrai/Faux
     
@@ -404,7 +405,7 @@ def render_dynamic_content_with_single_chart(analysis_text, summary_text, report
                     extracted_title = "Custom Analysis" if is_english else "Analyse Personnalisée"
                 
                 st.markdown("---")
-                # CORRECTION : Utilisation du préfixe dynamique (Chart: ou Graphique:)
+                # Utilisation du préfixe dynamique (Chart: ou Graphique:)
                 st.subheader(f"📊 {graph_prefix} {extracted_title}")
                 
                 # 2. On appelle la fonction d'affichage en lui passant le style voulu
