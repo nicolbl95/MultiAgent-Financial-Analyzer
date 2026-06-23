@@ -54,5 +54,6 @@ L'application permet aux utilisateurs de télécharger des PDF ou de sélectionn
 
 1. **Cloner le dépôt** :
    ```bash
-   git clone https://github.com/nicolbl95/First-Project
-   cd First-Project
+   git clone https://github.com/nicolbl95/MultiAgent-Financial-Analyzer
+
+   cd MultiAgent-Financial-Analyzer
