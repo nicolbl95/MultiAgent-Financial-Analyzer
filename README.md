@@ -7,14 +7,14 @@
 ![LangChain](https://img.shields.io/badge/LangChain-1C1E26?style=for-the-badge&logo=langchain&logoColor=white)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-0073EC?style=for-the-badge&logo=databricks&logoColor=white)
 ![Sentence Transformers](https://img.shields.io/badge/Sentence_Transformers-7B3FE4?style=for-the-badge&logoColor=white)
-![PyPDF](https://img.shields.io/badge/PyPDF-FF6B6B?style=for-the-badge&logoColor=white)
+![PyPDF](https://img.shields.io/badge/PyPDF-FF6B6B?style=for-the-badge&logo=white)
 ![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)
 ![Groq API](https://img.shields.io/badge/Groq_API-00D4AA?style=for-the-badge&logo=groq&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ## Description
-[cite_start]Application web **conteneurisée avec Docker** qui analyse automatiquement des rapports financiers PDF grâce à une architecture multi-agents (LangGraph + LangChain + RAG + ChromaDB)[cite: 203, 248]. [cite_start]L'application permet aux utilisateurs de télécharger des PDF ou de sélectionner des exemples prédéfinis pour une analyse immédiate[cite: 256, 257].
+Application web **conteneurisée avec Docker** qui analyse automatiquement des rapports financiers PDF grâce à une architecture multi-agents (LangGraph + LangChain + RAG + ChromaDB). L'application permet aux utilisateurs de télécharger des PDF ou de sélectionner des exemples prédéfinis pour une analyse immédiate.
 
 ## 📸 Aperçu de l'interface
 
@@ -24,15 +24,15 @@
 ## ✨ Fonctionnalités clés
 
 * 🤖 **Architecture Multi-Agents** : Découpage des tâches et de la logique métier entre un agent extracteur (RAG), un analyste de risques et un rédacteur de synthèses via LangGraph.
-* [cite_start]📊 **Rapports pré-chargés** : Intégration de 3 exemples de rapports réels (*BioSensus, TechNova, OmniDrive*) pour tester l'application instantanément sans téléversement obligatoire[cite: 256, 257].
-* [cite_start]🌍 **Interface Multilingue** : Support natif et complet de l'interface en Français et en Anglais commutable en un clic[cite: 512].
-* [cite_start]⏱️ **Compteur de Temps Réel** : Intégration d'un indicateur de temps estimé pendant l'exécution séquentielle des agents pour optimiser l'expérience utilisateur[cite: 512].
+* 📊 **Rapports pré-chargés** : Intégration de 3 exemples de rapports réels (*BioSensus, TechNova, OmniDrive*) pour tester l'application instantanément sans téléversement obligatoire.
+* 🌍 **Interface Multilingue** : Support natif et complet de l'interface en Français et en Anglais commutable en un clic.
+* ⏱️ **Compteur de Temps Réel** : Intégration d'un indicateur de temps estimé pendant l'exécution séquentielle des agents pour optimiser l'expérience utilisateur.
 
 ---
 
 ## 📂 Structure du projet
 
-[cite_start]L'architecture du code est découpée de manière modulaire afin de respecter les bonnes pratiques d'ingénierie logicielle[cite: 69, 87]:
+L'architecture du code est découpée de manière modulaire afin de respecter les bonnes pratiques d'ingénierie logicielle :
 
 ```text
 ├── .vscode/               # Configuration locale de l'éditeur VS Code
