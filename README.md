@@ -55,3 +55,82 @@ L'architecture du code est découpée de manière modulaire afin de respecter le
 ├── graph_builder.py       # Coeur du système : Construction et compilation du graphe LangGraph
 ├── README.md              # Documentation principale du projet
 └── requirements.txt       # Liste complète des dépendances Python requises
+
+🛠️ Technologies utilisées
+Outils de développement
+Python 3.14 : Langage et runtime de programmation principal.
+
+VS Code : Environnement de développement (IDE).
+
+Orchestration & IA
+LangGraph : Modélisation des flux et orchestration cyclique/séquentielle des agents IA.
+
+LangChain : Intégration des connecteurs LLM, chargement de documents et de prompts complexes.
+
+RAG (Retrieval-Augmented Generation) : Indexation sémantique pour nourrir les agents avec les sections du PDF les plus pertinentes.
+
+Modèles de Langage (LLM)
+Ollama (Llama 3) : Exécution de LLM en local pour préserver la confidentialité des données financières.
+
+Groq API : Accès Cloud ultra-rapide aux modèles open-source pour les environnements distants et serveurs de démo.
+
+Base de données & Traitement
+ChromaDB : Base de données vectorielle permettant de stocker et requêter efficacement les morceaux (chunks) de documents.
+
+Sentence Transformers : Génération locale d'embeddings vectoriels de haute qualité.
+
+PyPDF : Extraction brute et parsing du contenu textuel des rapports financiers.
+
+Interface & Déploiement
+Streamlit : Framework de création d'applications web d'IA interactives.
+
+Docker : Conteneurisation de l'application pour garantir un comportement identique d'une machine à une autre.
+
+🚀 Comment lancer le projet
+Prérequis
+Python 3.14.x (Vérifiez votre installation locale via python --version).
+
+Ollama installé sur votre machine : Télécharger Ollama.
+
+Docker (Optionnel, utile pour lancer l'environnement isolé) : Télécharger Docker Desktop.
+
+Étapes d'installation et d'exécution
+Cloner le dépôt :
+
+Bash
+git clone [https://github.com/nicolbl95/MultiAgent-Financial-Analyzer](https://github.com/nicolbl95/MultiAgent-Financial-Analyzer)
+cd MultiAgent-Financial-Analyzer
+Créer et activer l'environnement virtuel :
+
+Bash
+python -m venv venv
+# Sur Windows (Git Bash / Command Prompt) :
+source venv/Scripts/activate
+Installer les dépendances :
+
+Bash
+pip install -r requirements.txt
+Configurer l'environnement local :
+
+Pour Ollama (Local) : Récupérez le modèle Llama 3 en arrière-plan :
+
+Bash
+ollama pull llama3
+Pour Groq API (Cloud / Optionnel) : Créez un fichier .env à la racine et collez-y votre clé d'accès :
+
+Extrait de code
+GROQ_API_KEY=votre_cle_groq_ici
+Lancer l'interface Streamlit :
+
+Bash
+streamlit run app.py
+Exécution via Docker 🐳
+Si vous préférez exécuter l'application au sein d'un conteneur Docker léger :
+
+Bash
+# Construire l'image Docker
+docker build -t financial-analyzer .
+
+# Lancer le conteneur sur le port 8501
+docker run -p 8501:8501 financial-analyzer
+Rendez-vous ensuite sur http://localhost:8501 depuis votre navigateur internet.
