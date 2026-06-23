@@ -14,46 +14,44 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ## Description
-Application web **conteneurisée avec Docker** qui analyse automatiquement des rapports financiers PDF
-grâce à une architecture multi-agents (LangGraph + LangChain + RAG + ChromaDB).
-L'application permet aux utilisateurs de télécharger des PDF ou de sélectionner des exemples prédéfinis pour une analyse immédiate.
+[cite_start]Application web **conteneurisée avec Docker** qui analyse automatiquement des rapports financiers PDF grâce à une architecture multi-agents (LangGraph + LangChain + RAG + ChromaDB)[cite: 203, 248]. [cite_start]L'application permet aux utilisateurs de télécharger des PDF ou de sélectionner des exemples prédéfinis pour une analyse immédiate[cite: 256, 257].
 
-## Technologies utilisées
-### **Outils de développement**
-- **Python 3.14** : Langage principal.
-- **VS Code** : Éditeur de code.
+## 📸 Aperçu de l'interface
 
-### **Orchestration & IA**
-- **LangGraph** : Orchestration des agents IA (workflows multi-agents).
-- **LangChain** : Framework pour intégrer les LLM et outils (ex: ChromaDB, PDF Loader).
-- **RAG (Retrieval-Augmented Generation)** : Architecture pour enrichir les réponses avec des données externes.
+![Interface de l'application](assets/1dashboard.png)
+*Légende : Interface utilisateur Streamlit avec sélection de langue et compteur de temps réel.*
 
-### **Modèles de Langage (LLM)**
-- **Ollama (Llama 3)** : LLM local pour l’analyse hors ligne.
-- **Groq API** : LLM cloud pour le déploiement (accélération matérielle).
+## ✨ Fonctionnalités clés
 
-### **Base de données & Traitement**
-- **ChromaDB** : Base de données vectorielle pour stocker les *embeddings* des PDF.
-- **Sentence Transformers** : Génération d’*embeddings* pour le RAG.
-- **PyPDF** : Parsing des fichiers PDF.
-
-### **Interface & Déploiement**
-- **Streamlit** : Interface web interactive.
-- **Docker** : Conteneurisation pour un déploiement portable.
-
-## 🚀 Comment lancer le projet
-
-### **Prérequis**
-- **Python 3.14** installé (vérifiez avec `python --version`).
-- **Ollama** installé (pour une utilisation locale) : [Télécharger Ollama](https://ollama.com).
-- **Docker** (optionnel, pour une exécution conteneurisée) : [Télécharger Docker Desktop](https://www.docker.com/products/docker-desktop).
+* 🤖 **Architecture Multi-Agents** : Découpage des tâches et de la logique métier entre un agent extracteur (RAG), un analyste de risques et un rédacteur de synthèses via LangGraph.
+* [cite_start]📊 **Rapports pré-chargés** : Intégration de 3 exemples de rapports réels (*BioSensus, TechNova, OmniDrive*) pour tester l'application instantanément sans téléversement obligatoire[cite: 256, 257].
+* [cite_start]🌍 **Interface Multilingue** : Support natif et complet de l'interface en Français et en Anglais commutable en un clic[cite: 512].
+* [cite_start]⏱️ **Compteur de Temps Réel** : Intégration d'un indicateur de temps estimé pendant l'exécution séquentielle des agents pour optimiser l'expérience utilisateur[cite: 512].
 
 ---
 
-### **Étapes d'installation et d'exécution**
+## 📂 Structure du projet
 
-1. **Cloner le dépôt** :
-   ```bash
-   git clone https://github.com/nicolbl95/MultiAgent-Financial-Analyzer
+[cite_start]L'architecture du code est découpée de manière modulaire afin de respecter les bonnes pratiques d'ingénierie logicielle[cite: 69, 87]:
 
-   cd MultiAgent-Financial-Analyzer
+```text
+├── .vscode/               # Configuration locale de l'éditeur VS Code
+├── agents/                # Agents IA spécialisés autonomes
+│   ├── __init__.py
+│   ├── analyzer.py        # Agent d'analyse des risques (Ollama/Groq)
+│   ├── extractor.py       # Agent d'extraction et chunking PDF (ChromaDB)
+│   └── writer.py          # Agent de rédaction de la synthèse managériale
+├── assets/                # Images et ressources visuelles du projet
+│   └── 1dashboard.png     # Capture d'écran de l'interface applicative
+├── sample_reports/        # Les 3 rapports PDF financiers d'exemples
+│   ├── Rapport_Financier_Avance_OmniDrive.pdf
+│   ├── Rapport_Financier_TechNova.pdf
+│   └── Rapport_Performance_BioSensus_2025.pdf
+├── utils/                 # Fonctions utilitaires partagées
+├── venv/                  # Environnement virtuel local Python
+├── .env                   # Variables d'environnement privées (Clés API - Masquées)
+├── .gitignore             # Fichiers exclus du suivi de version Git
+├── app.py                 # Interface utilisateur et frontend Streamlit
+├── graph_builder.py       # Coeur du système : Construction et compilation du graphe LangGraph
+├── README.md              # Documentation principale du projet
+└── requirements.txt       # Liste complète des dépendances Python requises
