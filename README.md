@@ -23,7 +23,7 @@ grâce à une architecture multi-agents (LangGraph + LangChain + RAG + ChromaDB)
 - LangChain (framework LLM)
 - ChromaDB (base de données vectorielle / RAG)
 - Ollama — Llama 3 (LLM local)
-- Groq (accélération LLM)
+- Groq API (accélération LLM)
 - Streamlit (interface web)
 - Docker (conteneurisation)
 
